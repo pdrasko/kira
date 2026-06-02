@@ -94,7 +94,7 @@ export class Mouse extends Enemy {
     const mat = new THREE.MeshLambertMaterial({ color: 0x888888 });
     const body = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), mat);
     body.scale.set(1.2, 0.9, 1.5);
-    body.position.y = 0.25;
+    body.position.y = 0.2;  // bottom of sphere sits at ~y=0.002
     g.add(body);
 
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), mat);
@@ -127,10 +127,10 @@ export class Mouse extends Enemy {
   // droppedCheeses: array of { pos, consumed } from TrapManager
   update(delta, player, droppedCheeses) {
     if (this.hp <= 0) return;
-    if (this.state === 'trapped') {
-      this.mesh.position.y = Math.abs(Math.sin(Date.now() * 0.01)) * 0.08;
-      return;
-    }
+    // Keep mice on the ground at all times
+    this.mesh.position.y = 0;
+
+    if (this.state === 'trapped') return;
 
     // Only attracted to cheese the player has dropped — not pickup items
     if (droppedCheeses && droppedCheeses.length > 0) {

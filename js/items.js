@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// No cheese here — cheese is hidden inside trash cans, found by pressing Enter near one
+// No cheese here — found inside trash cans
 const SPAWN_LIST = [
   { type: 'basket',   x: 3,   z: -5  },
   { type: 'basket',   x: -7,  z: -18 },
@@ -49,8 +49,11 @@ function buildItemMesh(type) {
     case 'tincan':   return makeTinCan();
     case 'fishbone': return makeFishBone();
     case 'sock':     return makeSock();
-    case 'bottle':   return makeBottle();
-    default:         return makeGeneric();
+    case 'bottle':      return makeBottle();
+    case 'string':      return makeString();
+    case 'bean_can':    return makeBeanCan();
+    case 'rotten_apple': return makeRottenApple();
+    default:            return makeGeneric();
   }
 }
 
@@ -171,6 +174,72 @@ function makeBottle() {
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 7), new THREE.MeshLambertMaterial({ color: 0x333333 }));
   cap.position.y = 0.55;
   g.add(cap);
+  return g;
+}
+
+function makeString() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshLambertMaterial({ color: 0xd4a0c0 });
+  // Tangled loops
+  for (let i = 0; i < 4; i++) {
+    const loop = new THREE.Mesh(
+      new THREE.TorusGeometry(0.12 + i * 0.03, 0.018, 4, 10),
+      mat
+    );
+    loop.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+    loop.position.set((i % 2) * 0.04 - 0.02, 0.08, (Math.floor(i / 2)) * 0.04 - 0.02);
+    g.add(loop);
+  }
+  return g;
+}
+
+function makeBeanCan() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshLambertMaterial({ color: 0xcc4444 });
+  const silver = new THREE.MeshLambertMaterial({ color: 0x999999 });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.3, 10), mat);
+  body.position.y = 0.15;
+  body.castShadow = true;
+  g.add(body);
+  for (const y of [0.0, 0.3]) {
+    const cap = new THREE.Mesh(new THREE.CircleGeometry(0.13, 10), silver);
+    cap.rotation.x = -Math.PI / 2;
+    cap.position.y = y;
+    g.add(cap);
+  }
+  // Label band
+  const label = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.135, 0.135, 0.16, 10),
+    new THREE.MeshLambertMaterial({ color: 0xffdd99 })
+  );
+  label.position.y = 0.15;
+  g.add(label);
+  return g;
+}
+
+function makeRottenApple() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshLambertMaterial({ color: 0x6b4226 });
+  const spotMat = new THREE.MeshLambertMaterial({ color: 0x3a2010 });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 7), mat);
+  body.scale.y = 0.88;
+  body.position.y = 0.18;
+  body.castShadow = true;
+  g.add(body);
+  // Rotten spots
+  for (let i = 0; i < 4; i++) {
+    const spot = new THREE.Mesh(new THREE.SphereGeometry(0.05, 5, 4), spotMat);
+    const a = (i / 4) * Math.PI * 2;
+    spot.position.set(Math.cos(a) * 0.15, 0.2, Math.sin(a) * 0.15);
+    g.add(spot);
+  }
+  // Stem
+  const stem = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.015, 0.015, 0.1, 4),
+    new THREE.MeshLambertMaterial({ color: 0x4a3020 })
+  );
+  stem.position.y = 0.37;
+  g.add(stem);
   return g;
 }
 

@@ -67,17 +67,69 @@
       margin-top: 2px;
     }
 
+    /* Score sits just below the HP bar */
     #score-display {
       position: absolute;
-      top: 14px; right: 14px;
+      top: 80px; left: 14px;
       color: #fff;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       background: rgba(0,0,0,0.5);
       border: 1px solid rgba(255,255,255,0.2);
       border-radius: 6px;
-      padding: 6px 14px;
+      padding: 5px 12px;
       letter-spacing: 1px;
+    }
+
+    /* ── Build Mode Button ─────────────────────────────── */
+    #build-btn {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 48px; height: 48px;
+      background: #5dade2;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      z-index: 200;
+      user-select: none;
+      line-height: 1;
+    }
+    #build-btn:hover  { background: #3498db; transform: scale(1.06); }
+    #build-btn.active {
+      background: #1a5276;
+      box-shadow: 0 0 14px #5dade2, 0 0 4px #fff inset;
+    }
+    #build-btn title { display: none; }
+
+    /* ── Build Mode Overlay ────────────────────────────── */
+    #build-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 3px solid #5dade2;
+      border-radius: 0;
+    }
+
+    #build-banner {
+      position: absolute;
+      top: 72px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(29, 82, 118, 0.92);
+      color: #fff;
+      padding: 7px 22px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      border: 1px solid #5dade2;
     }
 
     #status-msg {
@@ -101,13 +153,13 @@
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(10, 10, 10, 0.9);
+      background: rgba(10, 10, 10, 0.92);
       color: #f0f0f0;
       padding: 22px 30px;
-      min-width: 220px;
+      min-width: 240px;
       border: 1px solid rgba(255,255,255,0.3);
       border-radius: 10px;
-      z-index: 100;
+      z-index: 300;
       pointer-events: auto;
     }
 
@@ -121,7 +173,7 @@
 
     #inventory-list {
       list-style: none;
-      line-height: 2;
+      line-height: 2.1;
       font-size: 14px;
     }
 
@@ -145,7 +197,7 @@
       padding: 5px 10px;
       border-radius: 5px;
       pointer-events: none;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     /* ── Loading Screen ─────────────────────────────────── */
@@ -169,37 +221,28 @@
       margin-bottom: 8px;
     }
 
-    #loading-sub {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 30px;
-    }
+    #loading-sub { font-size: 14px; color: #888; margin-bottom: 30px; }
 
     #loading-bar-outer {
-      width: 240px;
-      height: 8px;
-      background: #222;
-      border-radius: 4px;
-      overflow: hidden;
+      width: 240px; height: 8px;
+      background: #222; border-radius: 4px; overflow: hidden;
     }
 
     #loading-bar-inner {
-      height: 100%;
-      background: #2ecc40;
-      width: 0%;
+      height: 100%; background: #2ecc40; width: 0%;
       animation: loadprogress 1.2s ease forwards;
     }
 
     @keyframes loadprogress {
-      0%   { width: 0%; }
-      60%  { width: 70%; }
-      100% { width: 100%; }
+      0%  { width: 0%; }
+      60% { width: 70%; }
+      100%{ width: 100%; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Loading screen (removed once game starts) -->
+  <!-- Loading screen -->
   <div id="loading">
     <div id="loading-title">🐱 Kira's Park</div>
     <div id="loading-sub">A fuzzy cat adventure</div>
@@ -222,6 +265,14 @@
     <div id="status-msg" style="opacity:0"></div>
   </div>
 
+  <!-- Build mode button (top-right, light blue, white wrench) -->
+  <button id="build-btn" title="Build Mode (Q)">🔧</button>
+
+  <!-- Build mode overlay (shown when active) -->
+  <div id="build-overlay" class="hidden">
+    <div id="build-banner">🔧 BUILD MODE — Enter: place basket &nbsp;|&nbsp; B: drop cheese &nbsp;|&nbsp; Q or Esc: exit</div>
+  </div>
+
   <!-- Inventory panel -->
   <div id="inventory-panel" class="hidden">
     <h3>&#x1F4BC; Inventory</h3>
@@ -231,30 +282,24 @@
 
   <!-- Controls legend -->
   <div id="controls-legend">
-    WASD &mdash; Move &nbsp;|&nbsp; Space &mdash; Jump &nbsp;|&nbsp;
-    Enter &mdash; Interact / Pick Up / Attack &nbsp;|&nbsp;
-    B &mdash; Drop cheese as bait &nbsp;|&nbsp;
-    I &mdash; Inventory &nbsp;|&nbsp; Right-drag &mdash; Orbit camera
+    WASD &mdash; Move &nbsp;|&nbsp;
+    Space &mdash; Jump / Climb tree (hold) &nbsp;|&nbsp;
+    Enter &mdash; Rummage can / Pick up / Interact &nbsp;|&nbsp;
+    B &mdash; Drop cheese bait &nbsp;|&nbsp;
+    Q &mdash; Build Mode &nbsp;|&nbsp;
+    I &mdash; Inventory &nbsp;|&nbsp;
+    Right-drag &mdash; Orbit camera
   </div>
 
   <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
-      }
-    }
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js" } }
   </script>
   <script type="module">
-    // Remove loading screen once game module initialises
     import('./js/game.js').then(() => {
-      setTimeout(() => {
-        const el = document.getElementById('loading');
-        if (el) el.remove();
-      }, 1300);
+      setTimeout(() => { const el = document.getElementById('loading'); if (el) el.remove(); }, 1300);
     }).catch(err => {
       document.getElementById('loading').innerHTML =
-        '<div style="color:#ff4136;font-size:18px;padding:20px">Failed to load game.<br>' +
-        err.message + '</div>';
+        '<div style="color:#ff4136;font-size:18px;padding:20px">Failed to load game.<br>' + err.message + '</div>';
     });
   </script>
 </body>

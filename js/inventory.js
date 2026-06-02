@@ -1,11 +1,14 @@
 const ITEM_LABELS = {
-  cheese:   '🧀 Cheese',
-  basket:   '🧺 Laundry Basket',
-  yarn:     '🧶 Yarn Ball',
-  tincan:   '🥫 Tin Can',
-  fishbone: '🐟 Fish Bone',
-  sock:     '🧦 Old Sock',
-  bottle:   '🍾 Bottle',
+  cheese:       '🧀 Cheese',
+  basket:       '🧺 Laundry Basket',
+  yarn:         '🧶 Yarn Ball',
+  tincan:       '🥫 Tin Can',
+  fishbone:     '🐟 Fish Bone',
+  sock:         '🧦 Old Sock',
+  bottle:       '🍾 Bottle',
+  string:       '🧵 String',
+  bean_can:     '🫘 Bean Can',
+  rotten_apple: '🍎 Rotten Apple',
 };
 
 export class Inventory {
