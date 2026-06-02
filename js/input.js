@@ -8,11 +8,15 @@ export let enterJustPressed = false;
 export let iJustPressed     = false;
 export let bJustPressed     = false;
 export let qJustPressed     = false;
+export let upJustPressed    = false;
+export let downJustPressed  = false;
 
 let _enterJust = false;
 let _iJust     = false;
 let _bJust     = false;
 let _qJust     = false;
+let _upJust    = false;
+let _downJust  = false;
 
 export function initInput() {
   document.addEventListener('keydown', e => {
@@ -21,12 +25,14 @@ export function initInput() {
     if (k === 'a') KeyState.a = true;
     if (k === 's') KeyState.s = true;
     if (k === 'd') KeyState.d = true;
-    if (k === ' ')      { KeyState.space = true;  e.preventDefault(); }
-    if (k === 'enter')  { KeyState.enter = true;  _enterJust = true; e.preventDefault(); }
-    if (k === 'i')      { KeyState.i = true;      _iJust = true; }
-    if (k === 'b')      { KeyState.b = true;      _bJust = true; }
-    if (k === 'q')      { KeyState.q = true;      _qJust = true; }
-    if (k === 'escape') KeyState.escape = true;
+    if (k === ' ')           { KeyState.space = true;  e.preventDefault(); }
+    if (k === 'enter')       { KeyState.enter = true;  _enterJust = true; e.preventDefault(); }
+    if (k === 'i')           { KeyState.i = true;      _iJust = true; }
+    if (k === 'b')           { KeyState.b = true;      _bJust = true; }
+    if (k === 'q')           { KeyState.q = true;      _qJust = true; }
+    if (k === 'escape')      KeyState.escape = true;
+    if (k === 'arrowup')     { _upJust = true;   e.preventDefault(); }
+    if (k === 'arrowdown')   { _downJust = true; e.preventDefault(); }
   });
   document.addEventListener('keyup', e => {
     const k = e.key.toLowerCase();
@@ -48,5 +54,7 @@ export function syncFrameFlags() {
   iJustPressed     = _iJust;
   bJustPressed     = _bJust;
   qJustPressed     = _qJust;
-  _enterJust = _iJust = _bJust = _qJust = false;
+  upJustPressed    = _upJust;
+  downJustPressed  = _downJust;
+  _enterJust = _iJust = _bJust = _qJust = _upJust = _downJust = false;
 }
