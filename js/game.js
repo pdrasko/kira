@@ -11,6 +11,28 @@ import { HUD } from './hud.js';
 import { ThirdPersonCamera } from './camera.js';
 import { handleAttack, handleEnemyAttacks, updateFlashes } from './combat.js';
 
+// ─── Build mode button — wired up FIRST before any Three.js init ──────────────
+// (if anything below throws, the button still works)
+
+const buildBtn = document.getElementById('build-btn');
+let buildMode  = false;
+
+buildBtn.addEventListener('click', _toggleBuildMode);
+
+function _toggleBuildMode() {
+  buildMode = !buildMode;
+
+  buildBtn.classList.toggle('active', buildMode);
+
+  const overlay = document.getElementById('build-overlay');
+  if (overlay) overlay.classList.toggle('hidden', !buildMode);
+
+  // hud may not exist yet on first call (won't happen in practice)
+  if (typeof hud !== 'undefined' && hud) {
+    hud.showStatus(buildMode ? '🔧 Build Mode ON — place traps freely!' : 'Build Mode OFF');
+  }
+}
+
 // ─── Renderer & Scene ────────────────────────────────────────────────────────
 
 const canvas = document.getElementById('gameCanvas');
@@ -19,7 +41,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputEncoding = THREE.sRGBEncoding;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
@@ -46,22 +67,9 @@ const hud         = new HUD();
 const tpCam       = new ThirdPersonCamera(cam);
 tpCam.init();
 
-let score     = 0;
-let gameOver  = false;
-let buildMode = false;
-let lastTime  = performance.now();
-
-// ─── Build Mode Button ────────────────────────────────────────────────────────
-
-const buildBtn = document.getElementById('build-btn');
-buildBtn.addEventListener('click', toggleBuildMode);
-
-function toggleBuildMode() {
-  buildMode = !buildMode;
-  buildBtn.classList.toggle('active', buildMode);
-  document.getElementById('build-overlay').classList.toggle('hidden', !buildMode);
-  hud.showStatus(buildMode ? '🔧 Build Mode ON — place traps freely!' : 'Build Mode OFF');
-}
+let score    = 0;
+let gameOver = false;
+let lastTime = performance.now();
 
 // ─── Game Loop ───────────────────────────────────────────────────────────────
 
@@ -79,7 +87,6 @@ function animate(now) {
   updateHideState(player, trashCans);
 
   if (!buildMode) {
-    // Normal mode: enemies move, items bob
     for (const e of enemies) {
       if (e.hp > 0) e.update(delta, player, trapManager.cheeses);
     }
@@ -92,20 +99,14 @@ function animate(now) {
 
   updateFlashes(delta, scene);
 
-  // Enter → interact (works in both modes)
   if (enterJustPressed) handleInteract();
+  if (bJustPressed)     handleDropCheese();
+  if (qJustPressed)     _toggleBuildMode();
 
-  // B → drop cheese (works in both modes)
-  if (bJustPressed) handleDropCheese();
-
-  // Q → toggle build mode
-  if (qJustPressed) toggleBuildMode();
-
-  // I → inventory panel
   if (iJustPressed) inventory.toggle();
   if (KeyState.escape) {
     if (inventory.visible) inventory.hide();
-    else if (buildMode) toggleBuildMode();
+    else if (buildMode) _toggleBuildMode();
   }
 
   hud.updateHP(player.hp, player.maxHp);
@@ -124,7 +125,7 @@ requestAnimationFrame(animate);
 function handleInteract() {
   const pos = player.getPosition();
 
-  // 0. Rummage trash can (press Enter near one)
+  // 0. Rummage trash can
   for (const can of trashCans) {
     if (pos.distanceTo(can.position) < 1.6) {
       const contents = can.userData.contents;
@@ -140,7 +141,7 @@ function handleInteract() {
     }
   }
 
-  // 1. Pick up nearby ground item
+  // 1. Pick up ground item
   for (const item of items) {
     if (item.collected) continue;
     if (pos.distanceTo(item.mesh.position) < 1.8) {
@@ -158,7 +159,7 @@ function handleInteract() {
   });
   if (trapped) return;
 
-  // 3. Place basket from inventory
+  // 3. Place basket
   if (inventory.has('basket') && !trapManager.hasNearbyBasket(pos)) {
     trapManager.placeBasket(pos.clone(), inventory);
     hud.showStatus('Basket set! Drop cheese nearby with B 🧺');
@@ -186,8 +187,7 @@ function handleDropCheese() {
     const near = trapManager.hasNearbyBasket(player.getPosition());
     hud.showStatus(near
       ? 'Cheese dropped near basket — mice incoming! 🧀'
-      : 'Cheese dropped! Place a basket nearby to trap mice 🧀'
-    );
+      : 'Cheese dropped! Place a basket nearby to trap mice 🧀');
   }
 }
 
