@@ -150,7 +150,7 @@ function animate(now) {
 
   tpCam.update(player.getPosition());
   player.update(delta, KeyState, tpCam.getYaw(), treePositions);
-  updateHideState(player, trashCans);
+  if (!buildMode) updateHideState(player, trashCans);
 
   if (!buildMode) {
     for (const e of enemies) {

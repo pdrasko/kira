@@ -251,7 +251,7 @@ export class Dog extends Enemy {
   update(delta, player) {
     if (this.hp <= 0) return;
     const dist = this.distanceTo(player.getPosition());
-    const canSee = !player.isHiding;
+    const canSee = !player.isHiding && !player.isInTree;
 
     if (this.state === 'chase') {
       if (!canSee || dist > this.detRadius * 2) {
@@ -351,7 +351,7 @@ export class Human extends Enemy {
   update(delta, player) {
     if (this.hp <= 0) return;
     const dist = this.distanceTo(player.getPosition());
-    const canSee = !player.isHiding;
+    const canSee = !player.isHiding && !player.isInTree;
 
     if (this.state === 'chase') {
       if (!canSee || dist > this.detRadius * 2) {
@@ -424,7 +424,7 @@ export class StrayCat extends Enemy {
   update(delta, player) {
     if (this.hp <= 0) return;
     const dist = this.distanceTo(player.getPosition());
-    const canSee = !player.isHiding;
+    const canSee = !player.isHiding && !player.isInTree;
 
     if (this.state === 'chase') {
       if (!canSee || dist > this.detRadius * 1.6) {
