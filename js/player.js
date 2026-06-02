@@ -32,7 +32,7 @@ export class Player {
   }
 
   get isInTree() {
-    return this._nearTree !== null && this.mesh.position.y > 0.5;
+    return this._nearTree !== null && this.mesh.position.y > 0.2;
   }
 
   update(delta, KeyState, cameraYaw, treePositions = []) {

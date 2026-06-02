@@ -74,6 +74,19 @@ class Enemy {
     }
     this.moveToward(this.wanderTarget, this.speed * 0.5, delta);
   }
+
+  // Pick a wander target in the opposite direction from pos (used when losing sight)
+  _fleeFrom(pos) {
+    const dx = this.mesh.position.x - pos.x;
+    const dz = this.mesh.position.z - pos.z;
+    const d = Math.sqrt(dx * dx + dz * dz) || 1;
+    this.wanderTarget.set(
+      Math.max(-46, Math.min(46, this.mesh.position.x + (dx / d) * 14)),
+      0,
+      Math.max(-46, Math.min(46, this.mesh.position.z + (dz / d) * 14))
+    );
+    this.wanderTimer = 4;
+  }
 }
 
 // ─── Mouse ───────────────────────────────────────────────────────────────────
@@ -255,6 +268,7 @@ export class Dog extends Enemy {
 
     if (this.state === 'chase') {
       if (!canSee || dist > this.detRadius * 2) {
+        if (player.isInTree) this._fleeFrom(player.getPosition());
         this.state = 'return';
       } else {
         this.moveToward(player.getPosition(), this.speed, delta);
@@ -355,6 +369,7 @@ export class Human extends Enemy {
 
     if (this.state === 'chase') {
       if (!canSee || dist > this.detRadius * 2) {
+        if (player.isInTree) this._fleeFrom(player.getPosition());
         this.state = 'patrol';
       } else {
         this.moveToward(player.getPosition(), this.speed, delta);
@@ -428,6 +443,7 @@ export class StrayCat extends Enemy {
 
     if (this.state === 'chase') {
       if (!canSee || dist > this.detRadius * 1.6) {
+        if (player.isInTree) this._fleeFrom(player.getPosition());
         this.state = 'wander';
       } else {
         this.moveToward(player.getPosition(), this.speed, delta);
