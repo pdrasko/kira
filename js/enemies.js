@@ -81,10 +81,12 @@ class Enemy {
 export class Mouse extends Enemy {
   constructor(scene, x, z) {
     super(scene, x, z, {
-      hp: 20, speed: 3, detectionRadius: 12,
+      hp: 20, speed: 4.5, detectionRadius: 12,
       attackRange: 0.9, attackDamage: 3
     });
     this.attractedTo = null;
+    // Start with a very short timer so they immediately pick a direction
+    this.wanderTimer = Math.random() * 0.3;
   }
 
   _buildMesh() {
@@ -122,35 +124,55 @@ export class Mouse extends Enemy {
     return g;
   }
 
-  update(delta, player, items) {
+  // droppedCheeses: array of { pos, consumed } from TrapManager
+  update(delta, player, droppedCheeses) {
     if (this.hp <= 0) return;
     if (this.state === 'trapped') {
-      this.mesh.position.y = Math.sin(Date.now() * 0.008) * 0.05;
+      this.mesh.position.y = Math.abs(Math.sin(Date.now() * 0.01)) * 0.08;
       return;
     }
 
-    // Find nearest uncollected cheese
-    const cheese = items
-      .filter(it => !it.collected && it.type === 'cheese')
-      .sort((a, b) => this.distanceTo(a.mesh.position) - this.distanceTo(b.mesh.position))[0];
+    // Only attracted to cheese the player has dropped — not pickup items
+    if (droppedCheeses && droppedCheeses.length > 0) {
+      const nearest = droppedCheeses
+        .filter(c => !c.consumed)
+        .sort((a, b) => this.distanceTo(a.pos) - this.distanceTo(b.pos))[0];
 
-    if (cheese && this.distanceTo(cheese.mesh.position) < 15) {
-      this.state = 'attracted';
-      this.attractedTo = cheese;
-    } else if (this.state !== 'trapped') {
+      if (nearest && this.distanceTo(nearest.pos) < 20) {
+        this.state = 'attracted';
+        this.attractedTo = nearest;
+      } else if (this.state === 'attracted') {
+        this.state = 'wander';
+        this.attractedTo = null;
+      }
+    } else if (this.state === 'attracted') {
       this.state = 'wander';
+      this.attractedTo = null;
     }
 
     if (this.state === 'attracted' && this.attractedTo) {
-      if (this.attractedTo.collected) {
+      if (this.attractedTo.consumed) {
         this.state = 'wander';
         this.attractedTo = null;
+        this._doScurry(delta);
       } else {
-        this.moveToward(this.attractedTo.mesh.position, this.speed, delta);
+        this.moveToward(this.attractedTo.pos, this.speed, delta);
       }
     } else {
-      this._doWander(delta);
+      this._doScurry(delta);
     }
+  }
+
+  // Fast, jittery scurrying movement
+  _doScurry(delta) {
+    this.wanderTimer -= delta;
+    const dist = this.mesh.position.distanceTo(this.wanderTarget);
+    if (dist < 0.3 || this.wanderTimer <= 0) {
+      this._pickWanderTarget(8);
+      // Short intervals: 0.3–1.0 sec for that rapid scurry feel
+      this.wanderTimer = 0.3 + Math.random() * 0.7;
+    }
+    this.moveToward(this.wanderTarget, this.speed, delta);
   }
 }
 

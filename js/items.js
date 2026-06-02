@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 
+// No cheese here — cheese is hidden inside trash cans, found by pressing Enter near one
 const SPAWN_LIST = [
-  { type: 'cheese',   x: -5,  z: 8   },
-  { type: 'cheese',   x: 20,  z: -15 },
-  { type: 'cheese',   x: 30,  z: 10  },
   { type: 'basket',   x: 3,   z: -5  },
   { type: 'basket',   x: -7,  z: -18 },
+  { type: 'basket',   x: 18,  z: 15  },
   { type: 'yarn',     x: -18, z: 12  },
   { type: 'tincan',   x: 22,  z: 8   },
   { type: 'fishbone', x: -12, z: -20 },

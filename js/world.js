@@ -26,7 +26,12 @@ export function buildWorld(scene) {
   TREE_POSITIONS.forEach(([x, z]) => createTree(scene, x, z));
   BENCH_CONFIGS.forEach(([x, z, ry]) => createBench(scene, x, z, ry));
 
-  const trashCans = TRASH_POSITIONS.map(([x, z]) => createTrashCan(scene, x, z));
+  // Randomly hide cheese in ~60% of trash cans
+  const trashCans = TRASH_POSITIONS.map(([x, z]) => {
+    const can = createTrashCan(scene, x, z);
+    can.userData.hasCheeseItem = Math.random() < 0.6;
+    return can;
+  });
 
   return { trashCans };
 }
