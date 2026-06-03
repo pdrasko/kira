@@ -188,6 +188,16 @@
 
     .hidden { display: none !important; }
 
+    /* ── Version Badge ──────────────────────────────────── */
+    #version-badge {
+      position: absolute;
+      bottom: 12px; right: 14px;
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      font-family: monospace;
+      pointer-events: none;
+    }
+
     /* ── Controls Legend ────────────────────────────────── */
     #controls-legend {
       position: absolute;
@@ -293,10 +303,14 @@
     Right-drag &mdash; Orbit camera
   </div>
 
+  <div id="version-badge">v1.0.0</div>
+
   <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js" } }
   </script>
   <script type="module">
+    import { VERSION } from './js/version.js';
+    document.getElementById('version-badge').textContent = 'v' + VERSION;
     import('./js/game.js').then(() => {
       setTimeout(() => { const el = document.getElementById('loading'); if (el) el.remove(); }, 1300);
     }).catch(err => {
