@@ -31,6 +31,10 @@ export class Player {
     scene.add(this.mesh);
   }
 
+  get isInTree() {
+    return this._nearTree !== null && this.mesh.position.y > 0.2;
+  }
+
   update(delta, KeyState, cameraYaw, treePositions = []) {
     this._nearTree = this._findNearTree(treePositions);
     this._move(delta, KeyState, cameraYaw);

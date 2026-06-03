@@ -188,6 +188,16 @@
 
     .hidden { display: none !important; }
 
+    /* ── Version Badge ──────────────────────────────────── */
+    #version-badge {
+      position: absolute;
+      bottom: 12px; right: 14px;
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      font-family: monospace;
+      pointer-events: none;
+    }
+
     /* ── Controls Legend ────────────────────────────────── */
     #controls-legend {
       position: absolute;
@@ -271,14 +281,14 @@
 
   <!-- Build mode overlay (shown when active) -->
   <div id="build-overlay" class="hidden">
-    <div id="build-banner">🔧 BUILD MODE &nbsp;—&nbsp; Enter: place basket &nbsp;|&nbsp; B: drop cheese &nbsp;|&nbsp; Q or Esc: exit</div>
+    <div id="build-banner">🔧 BUILD MODE &nbsp;—&nbsp; ↑↓: select item &nbsp;|&nbsp; Walk to position &nbsp;|&nbsp; Enter: place &nbsp;|&nbsp; Q or Esc: exit</div>
   </div>
 
   <!-- Inventory panel -->
   <div id="inventory-panel" class="hidden">
     <h3>&#x1F4BC; Inventory</h3>
     <ul id="inventory-list"></ul>
-    <div id="inventory-hint">Press I or Escape to close</div>
+    <div id="inventory-hint">↑↓ select item  |  B: drop selected  |  I or Esc: close</div>
   </div>
 
   <!-- Controls legend -->
@@ -286,16 +296,21 @@
     WASD &mdash; Move &nbsp;|&nbsp;
     Space &mdash; Jump / Climb tree (hold) &nbsp;|&nbsp;
     Enter &mdash; Rummage can / Pick up / Interact &nbsp;|&nbsp;
-    B &mdash; Drop cheese bait &nbsp;|&nbsp;
-    Q &mdash; Build Mode &nbsp;|&nbsp;
     I &mdash; Inventory &nbsp;|&nbsp;
+    ↑↓ &mdash; Select item &nbsp;|&nbsp;
+    B &mdash; Drop selected item &nbsp;|&nbsp;
+    Q &mdash; Build Mode (auto-shows inventory) &nbsp;|&nbsp;
     Right-drag &mdash; Orbit camera
   </div>
+
+  <div id="version-badge">v1.0.0</div>
 
   <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js" } }
   </script>
   <script type="module">
+    import { VERSION } from './js/version.js';
+    document.getElementById('version-badge').textContent = 'v' + VERSION;
     import('./js/game.js').then(() => {
       setTimeout(() => { const el = document.getElementById('loading'); if (el) el.remove(); }, 1300);
     }).catch(err => {

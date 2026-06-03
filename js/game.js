@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { initInput, KeyState, syncFrameFlags,
-         enterJustPressed, iJustPressed, bJustPressed, qJustPressed } from './input.js';
+         enterJustPressed, iJustPressed, bJustPressed, qJustPressed,
+         upJustPressed, downJustPressed } from './input.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { spawnEnemies } from './enemies.js';
@@ -12,7 +13,6 @@ import { ThirdPersonCamera } from './camera.js';
 import { handleAttack, handleEnemyAttacks, updateFlashes } from './combat.js';
 
 // ─── Build mode button — wired up FIRST before any Three.js init ──────────────
-// (if anything below throws, the button still works)
 
 const buildBtn = document.getElementById('build-btn');
 let buildMode  = false;
@@ -27,9 +27,24 @@ function _toggleBuildMode() {
   const overlay = document.getElementById('build-overlay');
   if (overlay) overlay.classList.toggle('hidden', !buildMode);
 
-  // hud may not exist yet on first call (won't happen in practice)
-  if (typeof hud !== 'undefined' && hud) {
-    hud.showStatus(buildMode ? '🔧 Build Mode ON — place traps freely!' : 'Build Mode OFF');
+  if (buildMode) {
+    // Auto-show inventory in build mode
+    if (typeof inventory !== 'undefined' && inventory) {
+      inventory.show();
+      updateInventoryHint();
+    }
+    if (typeof hud !== 'undefined' && hud) {
+      hud.showStatus('🔧 Build Mode — select item with ↑↓, walk to position, Enter to place');
+    }
+  } else {
+    // Hide inventory when leaving build mode (unless already toggled by user)
+    if (typeof inventory !== 'undefined' && inventory && inventory.visible) {
+      inventory.hide();
+    }
+    clearGhost();
+    if (typeof hud !== 'undefined' && hud) {
+      hud.showStatus('Build Mode OFF');
+    }
   }
 }
 
@@ -71,6 +86,57 @@ let score    = 0;
 let gameOver = false;
 let lastTime = performance.now();
 
+// ─── Build mode ghost mesh ────────────────────────────────────────────────────
+
+let ghostMesh = null;
+let ghostType = null;
+
+function buildGhostMesh(type) {
+  const mat = new THREE.MeshLambertMaterial({
+    color: type === 'basket' ? 0xd2a679 : 0xf4d03f,
+    transparent: true,
+    opacity: 0.45
+  });
+  let geo;
+  if (type === 'basket') {
+    geo = new THREE.CylinderGeometry(0.45, 0.38, 0.58, 10);
+  } else {
+    geo = new THREE.CylinderGeometry(0.22, 0.16, 0.22, 6);
+  }
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.y = geo === geo ? 0.3 : 0.15;
+  return mesh;
+}
+
+function updateGhost(pos) {
+  if (!ghostMesh) return;
+  ghostMesh.position.set(pos.x, 0.3, pos.z);
+}
+
+function clearGhost() {
+  if (ghostMesh) {
+    scene.remove(ghostMesh);
+    ghostMesh = null;
+    ghostType = null;
+  }
+}
+
+function syncBuildGhost() {
+  if (!buildMode || !inventory.visible) { clearGhost(); return; }
+  const type = inventory.getSelectedType();
+  if (!type || (type !== 'basket' && type !== 'cheese')) {
+    clearGhost();
+    return;
+  }
+  if (type !== ghostType) {
+    clearGhost();
+    ghostMesh = buildGhostMesh(type);
+    ghostType = type;
+    scene.add(ghostMesh);
+  }
+  updateGhost(player.getPosition());
+}
+
 // ─── Game Loop ───────────────────────────────────────────────────────────────
 
 function animate(now) {
@@ -84,7 +150,7 @@ function animate(now) {
 
   tpCam.update(player.getPosition());
   player.update(delta, KeyState, tpCam.getYaw(), treePositions);
-  updateHideState(player, trashCans);
+  if (!buildMode) updateHideState(player, trashCans);
 
   if (!buildMode) {
     for (const e of enemies) {
@@ -99,14 +165,26 @@ function animate(now) {
 
   updateFlashes(delta, scene);
 
-  if (enterJustPressed) handleInteract();
-  if (bJustPressed)     handleDropCheese();
-  if (qJustPressed)     _toggleBuildMode();
+  // Inventory navigation (works in both modes when inventory is open)
+  if (inventory.visible) {
+    if (upJustPressed)   inventory.navigateUp();
+    if (downJustPressed) inventory.navigateDown();
+  }
 
-  if (iJustPressed) inventory.toggle();
-  if (KeyState.escape) {
-    if (inventory.visible) inventory.hide();
-    else if (buildMode) _toggleBuildMode();
+  syncBuildGhost();
+
+  if (buildMode) {
+    if (enterJustPressed) handleBuildPlace();
+    if (iJustPressed)     { inventory.toggle(); if (!inventory.visible) clearGhost(); }
+    if (qJustPressed || KeyState.escape) _toggleBuildMode();
+  } else {
+    if (enterJustPressed) handleInteract();
+    if (bJustPressed)     handleDropSelected();
+    if (qJustPressed)     _toggleBuildMode();
+    if (iJustPressed) inventory.toggle();
+    if (KeyState.escape) {
+      if (inventory.visible) inventory.hide();
+    }
   }
 
   hud.updateHP(player.hp, player.maxHp);
@@ -120,7 +198,37 @@ function animate(now) {
 
 requestAnimationFrame(animate);
 
-// ─── Interactions ─────────────────────────────────────────────────────────────
+// ─── Build mode placement ─────────────────────────────────────────────────────
+
+function handleBuildPlace() {
+  const type = inventory.getSelectedType();
+  if (!type) {
+    hud.showStatus('Select an item with ↑↓ first');
+    return;
+  }
+  const pos = player.getPosition().clone();
+  if (type === 'basket') {
+    if (trapManager.hasNearbyBasket(pos)) {
+      hud.showStatus('Too close to another basket!');
+      return;
+    }
+    trapManager.placeBasket(pos, inventory);
+    hud.showStatus('Basket placed! 🧺 Drop cheese nearby to bait mice.');
+  } else if (type === 'cheese') {
+    trapManager.dropCheese(pos, inventory);
+    const near = trapManager.hasNearbyBasket(pos);
+    hud.showStatus(near
+      ? 'Cheese placed near basket — mice incoming! 🧀'
+      : 'Cheese placed! Set a basket nearby to trap mice 🧀');
+  } else {
+    hud.showStatus('Can\'t place ' + type + ' here');
+    return;
+  }
+  // If item type exhausted, clear ghost
+  if (!inventory.has(type)) clearGhost();
+}
+
+// ─── Normal mode interactions ─────────────────────────────────────────────────
 
 function handleInteract() {
   const pos = player.getPosition();
@@ -159,35 +267,55 @@ function handleInteract() {
   });
   if (trapped) return;
 
-  // 3. Place basket
-  if (inventory.has('basket') && !trapManager.hasNearbyBasket(pos)) {
-    trapManager.placeBasket(pos.clone(), inventory);
-    hud.showStatus('Basket set! Drop cheese nearby with B 🧺');
-    return;
-  }
-
-  // 4. Attack (only outside build mode)
-  if (!buildMode) {
-    const hit = handleAttack(player, enemies, scene, enemy => {
-      const pts = scoreForEnemy(enemy);
-      score += pts;
-      hud.showStatus(enemy.constructor.name + ' defeated! +' + pts + ' pts');
-    });
-    if (!hit) hud.showStatus('Nothing in range...');
-  }
+  // 3. Attack
+  const hit = handleAttack(player, enemies, scene, enemy => {
+    const pts = scoreForEnemy(enemy);
+    score += pts;
+    hud.showStatus(enemy.constructor.name + ' defeated! +' + pts + ' pts');
+  });
+  if (!hit) hud.showStatus('Nothing in range...');
 }
 
-function handleDropCheese() {
-  if (!inventory.has('cheese')) {
-    hud.showStatus('No cheese in inventory 🧀');
+// ─── Drop selected item from inventory ───────────────────────────────────────
+
+function handleDropSelected() {
+  if (!inventory.visible) {
+    hud.showStatus('Press I to open inventory, then select an item to drop');
     return;
   }
-  const dropped = trapManager.dropCheese(player.getPosition().clone(), inventory);
-  if (dropped) {
-    const near = trapManager.hasNearbyBasket(player.getPosition());
+  const type = inventory.getSelectedType();
+  if (!type) {
+    hud.showStatus('Select an item with ↑↓ first');
+    return;
+  }
+  const pos = player.getPosition().clone();
+  if (type === 'cheese') {
+    trapManager.dropCheese(pos, inventory);
+    const near = trapManager.hasNearbyBasket(pos);
     hud.showStatus(near
       ? 'Cheese dropped near basket — mice incoming! 🧀'
       : 'Cheese dropped! Place a basket nearby to trap mice 🧀');
+  } else if (type === 'basket') {
+    if (trapManager.hasNearbyBasket(pos)) {
+      hud.showStatus('Too close to another basket!');
+      return;
+    }
+    trapManager.placeBasket(pos, inventory);
+    hud.showStatus('Basket placed! 🧺');
+  } else {
+    // Drop any other item on the ground (just remove from inventory for now)
+    inventory.remove(type);
+    hud.showStatus('Dropped ' + fmtItem(type));
+  }
+}
+
+function updateInventoryHint() {
+  const hint = document.getElementById('inventory-hint');
+  if (!hint) return;
+  if (buildMode) {
+    hint.textContent = '↑↓ select item  |  Enter: place  |  I: close inventory';
+  } else {
+    hint.textContent = '↑↓ select item  |  B: drop selected  |  I or Esc: close';
   }
 }
 

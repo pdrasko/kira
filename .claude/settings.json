@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/kira/.claude/hooks/bump-version.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
