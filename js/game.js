@@ -221,8 +221,8 @@ function handleBuildPlace() {
       ? 'Cheese placed near basket — mice incoming! 🧀'
       : 'Cheese placed! Set a basket nearby to trap mice 🧀');
   } else {
-    hud.showStatus('Can\'t place ' + type + ' here');
-    return;
+    trapManager.placeItem(type, pos, inventory);
+    hud.showStatus(fmtItem(type) + ' placed!');
   }
   // If item type exhausted, clear ghost
   if (!inventory.has(type)) clearGhost();
