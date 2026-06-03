@@ -188,6 +188,24 @@
 
     .hidden { display: none !important; }
 
+    /* ── Combat Indicator ───────────────────────────────── */
+    #combat-indicator {
+      position: absolute;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(180, 0, 0, 0.85);
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 4px;
+      padding: 5px 18px;
+      border-radius: 5px;
+      pointer-events: none;
+      display: none;
+      text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(255,0,0,0.6);
+    }
+
     /* ── Version Badge ──────────────────────────────────── */
     #version-badge {
       position: absolute;
@@ -275,6 +293,9 @@
     <div id="score-display">Score: 0</div>
     <div id="status-msg" style="opacity:0"></div>
   </div>
+
+  <!-- Combat indicator (top center) -->
+  <div id="combat-indicator">⚔ COMBAT</div>
 
   <!-- Build mode button (top-right, light blue, white wrench) -->
   <button id="build-btn" type="button" title="Build Mode (Q)">🔧</button>
