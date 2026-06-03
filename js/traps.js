@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { buildItemMesh } from './items.js';
 
 const BASKET_LINK_RANGE = 3.5;  // cheese auto-links to basket within this radius
 const COLLECT_RANGE     = 2.5;  // player must be this close to collect trap
@@ -10,6 +11,16 @@ export class TrapManager {
     this.scene   = scene;
     this.baskets = [];  // { mesh, pos, linkedCheese }
     this.cheeses = [];  // { mesh, pos, consumed, linkedBasket }
+    this.placed  = [];  // { mesh, pos, type } — generic placed items
+  }
+
+  // ── Place any non-trap item on the ground ────────────────────────────────
+  placeItem(type, pos, inventory) {
+    inventory.remove(type);
+    const mesh = buildItemMesh(type);
+    mesh.position.set(pos.x, 0, pos.z);
+    this.scene.add(mesh);
+    this.placed.push({ mesh, pos: mesh.position, type });
   }
 
   // ── Place basket (Enter key while holding basket) ─────────────────────────
@@ -77,6 +88,15 @@ export class TrapManager {
         this.cheeses.splice(i, 1);
         inventory.add('cheese');
         return 'cheese';
+      }
+    }
+    for (let i = this.placed.length - 1; i >= 0; i--) {
+      const p = this.placed[i];
+      if (pos.distanceTo(p.pos) < RANGE) {
+        this.scene.remove(p.mesh);
+        this.placed.splice(i, 1);
+        inventory.add(p.type);
+        return p.type;
       }
     }
     return null;
