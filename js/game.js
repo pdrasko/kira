@@ -11,6 +11,7 @@ import { TrapManager } from './traps.js';
 import { HUD } from './hud.js';
 import { ThirdPersonCamera } from './camera.js';
 import { handleAttack, handleEnemyAttacks, updateFlashes } from './combat.js';
+import { QuestCat } from './questcat.js';
 
 // ─── Build mode button — wired up FIRST before any Three.js init ──────────────
 
@@ -85,10 +86,12 @@ const items       = spawnItems(scene);
 const trapManager = new TrapManager(scene);
 const hud         = new HUD();
 const tpCam       = new ThirdPersonCamera(cam);
+const questCat    = new QuestCat(scene);
 tpCam.init();
 
-let score      = 0;
-let gameOver   = false;
+let score          = 0;
+let lastCatScore   = 0;
+let gameOver       = false;
 let lastTime   = performance.now();
 let combatMode = false;
 
@@ -184,6 +187,20 @@ function animate(now) {
     respawnEnemies(scene, enemies);
     hud.showStatus('Reinforcements incoming! 🐾');
   }
+
+  // Quest cat — spawn at every 10-point milestone
+  questCat.update(delta);
+  const catMilestone = Math.floor(score / 10);
+  if (catMilestone > Math.floor(lastCatScore / 10)) {
+    questCat.spawn(new THREE.Vector3(0, 0, 0));
+    hud.showStatus('A mysterious cat has appeared at spawn! 🐱');
+  }
+  lastCatScore = score;
+
+  // Check if active quest item is now in inventory
+  const reward = questCat.checkQuestComplete(inventory);
+  if (reward) hud.showStatus('Quest complete! Received ' + reward + ' 🎁');
+
   updateFlashes(delta, scene);
 
   // Inventory navigation (works in both modes when inventory is open)
@@ -254,7 +271,10 @@ function handleBuildPlace() {
 function handleInteract() {
   const pos = player.getPosition();
 
-  // 0. Rummage trash can
+  // 0. Quest cat interaction
+  if (questCat.tryInteract(pos)) return;
+
+  // 0b. Rummage trash can
   for (const can of trashCans) {
     if (pos.distanceTo(can.position) < 1.6) {
       const contents = can.userData.contents;
