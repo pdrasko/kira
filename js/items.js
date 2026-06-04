@@ -41,7 +41,7 @@ export function spawnItems(scene) {
   return SPAWN_LIST.map(({ type, x, z }) => new Item(scene, type, x, z));
 }
 
-function buildItemMesh(type) {
+export function buildItemMesh(type) {
   switch (type) {
     case 'cheese':   return makeCheese();
     case 'basket':   return makeBasket();
