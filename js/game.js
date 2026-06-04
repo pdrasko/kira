@@ -279,6 +279,13 @@ function handleInteract() {
 // ─── Drop selected item from inventory ───────────────────────────────────────
 
 function handleDropSelected() {
+  // Pickup takes priority — walk up to a placed item and press B to retrieve it
+  const picked = trapManager.pickupNearby(player.getPosition(), inventory);
+  if (picked) {
+    hud.showStatus('Picked up ' + (picked === 'basket' ? 'basket 🧺' : 'cheese 🧀'));
+    return;
+  }
+
   if (!inventory.visible) {
     hud.showStatus('Press I to open inventory, then select an item to drop');
     return;

@@ -55,6 +55,33 @@ export class TrapManager {
     return true;
   }
 
+  pickupNearby(pos, inventory) {
+    const RANGE = 2.2;
+    for (let i = this.baskets.length - 1; i >= 0; i--) {
+      const b = this.baskets[i];
+      if (b.trappedMouse) continue;
+      if (pos.distanceTo(b.pos) < RANGE) {
+        if (b.linkedCheese) b.linkedCheese.linkedBasket = null;
+        this.scene.remove(b.mesh);
+        this.baskets.splice(i, 1);
+        inventory.add('basket');
+        return 'basket';
+      }
+    }
+    for (let i = this.cheeses.length - 1; i >= 0; i--) {
+      const c = this.cheeses[i];
+      if (c.consumed) continue;
+      if (pos.distanceTo(c.pos) < RANGE) {
+        if (c.linkedBasket) c.linkedBasket.linkedCheese = null;
+        this.scene.remove(c.mesh);
+        this.cheeses.splice(i, 1);
+        inventory.add('cheese');
+        return 'cheese';
+      }
+    }
+    return null;
+  }
+
   hasNearbyBasket(pos) {
     return this.baskets.some(b => pos.distanceTo(b.pos) < BASKET_LINK_RANGE);
   }
