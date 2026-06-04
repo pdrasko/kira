@@ -25,6 +25,7 @@ export class QuestCat {
   }
 
   get active() { return this.cat !== null; }
+  get talking() { return this._bubbleEl.style.display === 'block'; }
 
   spawn(pos) {
     if (this.active) return;

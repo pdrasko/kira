@@ -171,7 +171,7 @@ function animate(now) {
   player.update(delta, KeyState, tpCam.getYaw(), treePositions);
   if (!buildMode) updateHideState(player, trashCans);
 
-  if (!buildMode) {
+  if (!buildMode && !questCat.talking) {
     for (const e of enemies) {
       if (e.hp > 0) e.update(delta, player, trapManager.cheeses);
     }
