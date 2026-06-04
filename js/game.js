@@ -175,11 +175,11 @@ function animate(now) {
 
   if (buildMode) {
     if (enterJustPressed) handleBuildPlace();
+    if (bJustPressed)     handleBuildPickup();
     if (iJustPressed)     { inventory.toggle(); if (!inventory.visible) clearGhost(); }
     if (qJustPressed || KeyState.escape) _toggleBuildMode();
   } else {
     if (enterJustPressed) handleInteract();
-    if (bJustPressed)     handleDropSelected();
     if (qJustPressed)     _toggleBuildMode();
     if (iJustPressed) inventory.toggle();
     if (KeyState.escape) {
@@ -276,43 +276,14 @@ function handleInteract() {
   if (!hit) hud.showStatus('Nothing in range...');
 }
 
-// ─── Drop selected item from inventory ───────────────────────────────────────
+// ─── Build mode: pick up a placed basket or cheese ───────────────────────────
 
-function handleDropSelected() {
-  // Pickup takes priority — walk up to a placed item and press B to retrieve it
+function handleBuildPickup() {
   const picked = trapManager.pickupNearby(player.getPosition(), inventory);
   if (picked) {
     hud.showStatus('Picked up ' + (picked === 'basket' ? 'basket 🧺' : 'cheese 🧀'));
-    return;
-  }
-
-  if (!inventory.visible) {
-    hud.showStatus('Press I to open inventory, then select an item to drop');
-    return;
-  }
-  const type = inventory.getSelectedType();
-  if (!type) {
-    hud.showStatus('Select an item with ↑↓ first');
-    return;
-  }
-  const pos = player.getPosition().clone();
-  if (type === 'cheese') {
-    trapManager.dropCheese(pos, inventory);
-    const near = trapManager.hasNearbyBasket(pos);
-    hud.showStatus(near
-      ? 'Cheese dropped near basket — mice incoming! 🧀'
-      : 'Cheese dropped! Place a basket nearby to trap mice 🧀');
-  } else if (type === 'basket') {
-    if (trapManager.hasNearbyBasket(pos)) {
-      hud.showStatus('Too close to another basket!');
-      return;
-    }
-    trapManager.placeBasket(pos, inventory);
-    hud.showStatus('Basket placed! 🧺');
   } else {
-    // Drop any other item on the ground (just remove from inventory for now)
-    inventory.remove(type);
-    hud.showStatus('Dropped ' + fmtItem(type));
+    hud.showStatus('Nothing nearby to pick up');
   }
 }
 
@@ -320,9 +291,9 @@ function updateInventoryHint() {
   const hint = document.getElementById('inventory-hint');
   if (!hint) return;
   if (buildMode) {
-    hint.textContent = '↑↓ select item  |  Enter: place  |  I: close inventory';
+    hint.textContent = '↑↓ select  |  Enter: place  |  B: pick up  |  I: close';
   } else {
-    hint.textContent = '↑↓ select item  |  B: drop selected  |  I or Esc: close';
+    hint.textContent = '↑↓ browse  |  I or Esc: close';
   }
 }
 
