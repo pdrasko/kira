@@ -358,10 +358,10 @@ function updateHideState(player, trashCans) {
 
 function scoreForEnemy(e) {
   const n = e.constructor.name;
-  if (n === 'Mouse')    return 10;
-  if (n === 'StrayCat') return 15;
-  if (n === 'Dog')      return 25;
-  if (n === 'Human')    return 50;
+  if (n === 'Mouse')    return 1;
+  if (n === 'StrayCat') return 3;
+  if (n === 'Dog')      return 5;
+  if (n === 'Human')    return 7;
   return 5;
 }
 
