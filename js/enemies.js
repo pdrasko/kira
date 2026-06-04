@@ -94,12 +94,12 @@ class Enemy {
 export class Mouse extends Enemy {
   constructor(scene, x, z) {
     super(scene, x, z, {
-      hp: 20, speed: 4.5, detectionRadius: 12,
+      hp: 20, speed: 9.5, detectionRadius: 18,
       attackRange: 0.9, attackDamage: 3
     });
     this.attractedTo = null;
-    // Start with a very short timer so they immediately pick a direction
     this.wanderTimer = Math.random() * 0.3;
+    this.dirChangeTimer = 0;
   }
 
   _buildMesh() {
@@ -183,7 +183,7 @@ export class Mouse extends Enemy {
     if (dist < 0.3 || this.wanderTimer <= 0) {
       this._pickWanderTarget(8);
       // Short intervals: 0.3–1.0 sec for that rapid scurry feel
-      this.wanderTimer = 0.3 + Math.random() * 0.7;
+      this.wanderTimer = 0.15 + Math.random() * 0.35;
     }
     this.moveToward(this.wanderTarget, this.speed, delta);
   }
