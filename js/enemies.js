@@ -457,18 +457,29 @@ export class StrayCat extends Enemy {
 
 // ─── Spawn ───────────────────────────────────────────────────────────────────
 
+const SPAWN_CONFIG = [
+  { cls: Mouse,    x: -20, z:  10 },
+  { cls: Mouse,    x:  15, z: -25 },
+  { cls: Mouse,    x:  30, z:  20 },
+  { cls: Mouse,    x:  -5, z:  35 },
+  { cls: Mouse,    x:  35, z:  -5 },
+  { cls: Dog,      x: -30, z: -20 },
+  { cls: Dog,      x:  28, z:  22 },
+  { cls: Human,    x:  25, z:  30 },
+  { cls: Human,    x: -28, z:  28 },
+  { cls: StrayCat, x: -10, z:  20 },
+  { cls: StrayCat, x:  20, z: -10 },
+];
+
 export function spawnEnemies(scene) {
-  return [
-    new Mouse(scene, -20, 10),
-    new Mouse(scene, 15, -25),
-    new Mouse(scene, 30, 20),
-    new Mouse(scene, -5, 35),
-    new Mouse(scene, 35, -5),
-    new Dog(scene, -30, -20),
-    new Dog(scene, 28, 22),
-    new Human(scene, 25, 30),
-    new Human(scene, -28, 28),
-    new StrayCat(scene, -10, 20),
-    new StrayCat(scene, 20, -10),
-  ];
+  return SPAWN_CONFIG.map(({ cls, x, z }) => new cls(scene, x, z));
+}
+
+export function respawnEnemies(scene, enemies) {
+  // Remove surviving meshes
+  for (const e of enemies) scene.remove(e.mesh);
+  enemies.length = 0;
+  for (const { cls, x, z } of SPAWN_CONFIG) {
+    enemies.push(new cls(scene, x, z));
+  }
 }

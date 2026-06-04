@@ -4,7 +4,7 @@ import { initInput, KeyState, syncFrameFlags,
          upJustPressed, downJustPressed } from './input.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
-import { spawnEnemies } from './enemies.js';
+import { spawnEnemies, respawnEnemies } from './enemies.js';
 import { spawnItems } from './items.js';
 import { Inventory } from './inventory.js';
 import { TrapManager } from './traps.js';
@@ -180,6 +180,10 @@ function animate(now) {
   }
 
   updateCombatMode();
+  if (enemies.filter(e => e.hp > 0).length <= 5) {
+    respawnEnemies(scene, enemies);
+    hud.showStatus('Reinforcements incoming! 🐾');
+  }
   updateFlashes(delta, scene);
 
   // Inventory navigation (works in both modes when inventory is open)
