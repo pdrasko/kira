@@ -20,6 +20,11 @@ let buildMode  = false;
 buildBtn.addEventListener('click', _toggleBuildMode);
 
 function _toggleBuildMode() {
+  // Block entering build mode during combat
+  if (!buildMode && combatMode) {
+    if (typeof hud !== 'undefined' && hud) hud.showStatus('Cannot enter build mode during combat!');
+    return;
+  }
   buildMode = !buildMode;
 
   buildBtn.classList.toggle('active', buildMode);
@@ -82,9 +87,20 @@ const hud         = new HUD();
 const tpCam       = new ThirdPersonCamera(cam);
 tpCam.init();
 
-let score    = 0;
-let gameOver = false;
-let lastTime = performance.now();
+let score      = 0;
+let gameOver   = false;
+let lastTime   = performance.now();
+let combatMode = false;
+
+const combatIndicator = document.getElementById('combat-indicator');
+
+function updateCombatMode() {
+  const inCombat = enemies.some(e => e.hp > 0 && e.state === 'chase');
+  if (inCombat === combatMode) return;
+  combatMode = inCombat;
+  combatIndicator.style.display = combatMode ? 'block' : 'none';
+  if (combatMode && buildMode) _toggleBuildMode();
+}
 
 // ─── Build mode ghost mesh ────────────────────────────────────────────────────
 
@@ -163,6 +179,7 @@ function animate(now) {
     handleEnemyAttacks(player, enemies, delta);
   }
 
+  updateCombatMode();
   updateFlashes(delta, scene);
 
   // Inventory navigation (works in both modes when inventory is open)
