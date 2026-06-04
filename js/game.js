@@ -190,6 +190,9 @@ function animate(now) {
 
   // Quest cat — spawn at every 10-point milestone
   questCat.update(delta);
+  if (questCat.isNearby(player.getPosition())) {
+    hud.showStatus('Press Enter to talk to the mysterious cat 🐱');
+  }
   const catMilestone = Math.floor(score / 10);
   if (catMilestone > Math.floor(lastCatScore / 10)) {
     questCat.spawn(new THREE.Vector3(0, 0, 0));

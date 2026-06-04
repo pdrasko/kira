@@ -44,9 +44,18 @@ export class QuestCat {
     this.cat.mesh.rotation.y += delta * 0.6;
   }
 
+  isNearby(playerPos) {
+    if (!this.cat) return false;
+    const dx = playerPos.x - this.cat.mesh.position.x;
+    const dz = playerPos.z - this.cat.mesh.position.z;
+    return Math.sqrt(dx * dx + dz * dz) < 3.5;
+  }
+
   tryInteract(playerPos) {
     if (!this.cat) return false;
-    if (playerPos.distanceTo(this.cat.mesh.position) < 2.2) {
+    const dx = playerPos.x - this.cat.mesh.position.x;
+    const dz = playerPos.z - this.cat.mesh.position.z;
+    if (Math.sqrt(dx * dx + dz * dz) < 3.5) {
       this._showBubble();
       return true;
     }
