@@ -163,17 +163,35 @@ export class Mouse extends Enemy {
       this.attractedTo = null;
     }
 
+    const playerPos = player.getPosition();
+    const distToPlayer = this.distanceTo(playerPos);
+
     if (this.state === 'attracted' && this.attractedTo) {
       if (this.attractedTo.consumed) {
         this.state = 'wander';
         this.attractedTo = null;
-        this._doScurry(delta);
       } else {
         this.moveToward(this.attractedTo.pos, this.speed, delta);
+        return;
       }
+    }
+
+    // Always flee from player when nearby
+    if (distToPlayer < this.detRadius) {
+      this._fleeFromPlayer(playerPos, delta);
     } else {
       this._doScurry(delta);
     }
+  }
+
+  _fleeFromPlayer(playerPos, delta) {
+    // Continuously update flee target away from player
+    this.wanderTimer -= delta;
+    if (this.wanderTimer <= 0) {
+      this._fleeFrom(playerPos);
+      this.wanderTimer = 0.2 + Math.random() * 0.3;
+    }
+    this.moveToward(this.wanderTarget, this.speed, delta);
   }
 
   // Fast, jittery scurrying movement
