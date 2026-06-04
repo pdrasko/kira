@@ -9,7 +9,7 @@ const SLIDE_MAX_DOWN = 1.2;    // max slide speed downward
 const TREE_RADIUS    = 0.85;   // proximity to trunk required to climb
 const TREE_MAX_H     = 7.0;    // max climb height (just below canopy)
 const MAX_HP         = 30;
-const REGEN_INTERVAL = 10;
+const REGEN_INTERVAL = 3;
 const BOUNDARY       = 47;
 
 export class Player {
