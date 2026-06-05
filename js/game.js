@@ -12,6 +12,7 @@ import { HUD } from './hud.js';
 import { ThirdPersonCamera } from './camera.js';
 import { handleAttack, handleEnemyAttacks, updateFlashes } from './combat.js';
 import { QuestCat } from './questcat.js';
+import { TortoiseshellCat } from './tortoiseshell.js';
 
 // ─── Build mode button — wired up FIRST before any Three.js init ──────────────
 
@@ -86,11 +87,13 @@ const items       = spawnItems(scene);
 const trapManager = new TrapManager(scene);
 const hud         = new HUD();
 const tpCam       = new ThirdPersonCamera(cam);
-const questCat    = new QuestCat(scene);
+const questCat         = new QuestCat(scene);
+const tortoiseshell    = new TortoiseshellCat(scene);
 tpCam.init();
 
-let score          = 0;
-let lastCatScore   = 0;
+let score              = 0;
+let lastCatScore       = 0;
+let lastTortoiseshellScore = 0;
 let gameOver       = false;
 let lastTime   = performance.now();
 let combatMode = false;
@@ -171,7 +174,7 @@ function animate(now) {
   player.update(delta, KeyState, tpCam.getYaw(), treePositions);
   if (!buildMode) updateHideState(player, trashCans);
 
-  if (!buildMode && !questCat.talking) {
+  if (!buildMode && !questCat.talking && !tortoiseshell.talking) {
     for (const e of enemies) {
       if (e.hp > 0) e.update(delta, player, trapManager.cheeses);
     }
@@ -203,6 +206,24 @@ function animate(now) {
   // Check if active quest item is now in inventory
   const reward = questCat.checkQuestComplete(inventory);
   if (reward) hud.showStatus('Quest complete! Received ' + reward + ' 🎁');
+
+  // Tortoiseshell cat — spawn at every 30-point milestone
+  tortoiseshell.update(delta, player, enemies, cam, pts => {
+    score += pts;
+    hud.showStatus('You defeated the tortoiseshell! +' + pts + ' pts 🐱');
+  });
+  const tsMilestone = Math.floor(score / 30);
+  if (tsMilestone > Math.floor(lastTortoiseshellScore / 30)) {
+    if (!tortoiseshell.active) {
+      tortoiseshell.unblock();
+      tortoiseshell.spawn();
+      hud.showStatus('A tortoiseshell cat has appeared! 🐱🟠');
+    }
+  }
+  lastTortoiseshellScore = score;
+  if (tortoiseshell.isNearby(player.getPosition())) {
+    hud.showStatus('Walk up and choose: ❤️ Love or ⚔️ Battle');
+  }
 
   updateFlashes(delta, scene);
 
@@ -276,6 +297,14 @@ function handleInteract() {
 
   // 0. Quest cat interaction
   if (questCat.tryInteract(pos)) return;
+
+  // 0b. Tortoiseshell love-click (filling state)
+  const loveResult = tortoiseshell.loveClick(pos);
+  if (loveResult === 'full') { hud.showStatus('💗 She loves you! Your companion joins the fight!'); return; }
+  if (loveResult) return;
+
+  // 0c. Attack hostile tortoiseshell
+  if (tortoiseshell.tryPlayerAttack(pos)) { hud.showStatus('You hit the tortoiseshell!'); return; }
 
   // 0b. Rummage trash can
   for (const can of trashCans) {
