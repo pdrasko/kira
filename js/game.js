@@ -209,9 +209,14 @@ function animate(now) {
 
   // Tortoiseshell cat — spawn at every 30-point milestone
   tortoiseshell.update(delta, player, enemies, cam, pts => {
-    score += pts;
-    hud.showStatus('You defeated the tortoiseshell! +' + pts + ' pts 🐱');
+    if (pts > 0) {
+      score += pts;
+      hud.showStatus('You defeated the tortoiseshell! +' + pts + ' pts 🐱');
+    } else {
+      hud.showStatus('Your companion has fallen! 💔');
+    }
   });
+  hud.updateCompanionHP(tortoiseshell.isAlly ? tortoiseshell.hp : null, 30);
   const tsMilestone = Math.floor(score / 30);
   if (tsMilestone > Math.floor(lastTortoiseshellScore / 30)) {
     if (!tortoiseshell.active) {

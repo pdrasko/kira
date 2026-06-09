@@ -5,7 +5,7 @@ const LOVE_CLICKS_NEEDED = 10;
 const ALLY_ATTACK_DAMAGE = 10;
 const ALLY_ATTACK_RANGE  = 2.8;
 const ALLY_ATTACK_CD     = 1.2;
-const HOSTILE_HP         = 30;
+const MAX_HP             = 30;
 const HOSTILE_SPEED      = 5;
 const HOSTILE_ATTACK_DMG = 6;
 const HOSTILE_ATTACK_RNG = 1.2;
@@ -18,9 +18,11 @@ export class TortoiseshellCat {
     this._buildUI();
   }
 
-  get active()  { return this.cat !== null; }
-  get isAlly()  { return this.cat?.state === 'ally'; }
-  get talking() { return this._uiEl.style.display !== 'none'; }
+  get active()   { return this.cat !== null; }
+  get isAlly()   { return this.cat?.state === 'ally'; }
+  get talking()  { return this._uiEl.style.display !== 'none'; }
+  get hp()       { return this.cat ? this.cat.hp : null; }
+  get maxHp()    { return this.cat ? this.cat.maxHp : null; }
 
   // Call once when score milestone hit
   spawn() {
@@ -38,7 +40,7 @@ export class TortoiseshellCat {
       loveClicks: 0,
       wanderTimer: 0,
       wanderTarget: new THREE.Vector3(x, 0, z),
-      hp: HOSTILE_HP,
+      hp: MAX_HP, maxHp: MAX_HP,
       attackCd: 0,
     };
   }
@@ -85,6 +87,25 @@ export class TortoiseshellCat {
             e.takeDamage(ALLY_ATTACK_DAMAGE);
             if (e.hp <= 0) e.die(this.scene);
             cat.attackCd = ALLY_ATTACK_CD;
+            break;
+          }
+        }
+      }
+      // Take damage from nearby enemies
+      cat.damageCd = (cat.damageCd || 0) - delta;
+      if (cat.damageCd <= 0) {
+        for (const e of enemies) {
+          if (e.hp <= 0) continue;
+          if (cat.mesh.position.distanceTo(e.mesh.position) < e.attackRange + 0.3) {
+            cat.hp -= e.attackDamage;
+            cat.damageCd = 1.5;
+            this._flash();
+            if (cat.hp <= 0) {
+              this.scene.remove(cat.mesh);
+              this.cat = null;
+              if (onHostileKill) onHostileKill(0); // signal death with 0 pts (companion died)
+              return;
+            }
             break;
           }
         }
@@ -205,6 +226,17 @@ export class TortoiseshellCat {
     this._fillEl.style.width = pct + '%';
     const left = LOVE_CLICKS_NEEDED - this.cat.loveClicks;
     this._labelEl.textContent = left > 0 ? `💗 Press Enter × ${left} more!` : '💗 Full!';
+  }
+
+  _flash() {
+    if (!this.cat) return;
+    this.cat.mesh.traverse(c => {
+      if (!c.isMesh) return;
+      const orig = c.material.color.getHex();
+      c.material = c.material.clone();
+      c.material.color.setHex(0xff2222);
+      setTimeout(() => { if (c.material) c.material.color.setHex(orig); }, 180);
+    });
   }
 
   _hideUI() { this._uiEl.style.display = 'none'; }
