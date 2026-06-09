@@ -21,8 +21,15 @@ export class TortoiseshellCat {
   get active()   { return this.cat !== null; }
   get isAlly()   { return this.cat?.state === 'ally'; }
   get talking()  { return this._uiEl.style.display !== 'none'; }
-  get hp()       { return this.cat ? this.cat.hp : null; }
-  get maxHp()    { return this.cat ? this.cat.maxHp : null; }
+  get hp()        { return this.cat ? this.cat.hp : null; }
+  get maxHp()     { return this.cat ? this.cat.maxHp : null; }
+  get hunger()    { return this.cat ? this.cat.hunger : null; }
+  get maxHunger() { return this.cat ? this.cat.maxHunger : null; }
+
+  feed(amount) {
+    if (!this.cat) return;
+    this.cat.hunger = Math.min(this.cat.maxHunger, this.cat.hunger + amount);
+  }
 
   // Call once when score milestone hit
   spawn() {
@@ -41,6 +48,8 @@ export class TortoiseshellCat {
       wanderTimer: 0,
       wanderTarget: new THREE.Vector3(x, 0, z),
       hp: MAX_HP, maxHp: MAX_HP,
+      hunger: 10, maxHunger: 10,
+      starveTimer: 0,
       attackCd: 0,
     };
   }
@@ -110,6 +119,13 @@ export class TortoiseshellCat {
           }
         }
       }
+      // Hunger drain (same rate as player)
+      cat.hunger = Math.max(0, cat.hunger - 0.05 * delta);
+      if (cat.hunger === 0) {
+        cat.starveTimer += delta;
+        if (cat.starveTimer >= 4) { cat.starveTimer = 0; cat.hp = Math.max(0, cat.hp - 1); this._flash(); }
+      } else { cat.starveTimer = 0; }
+
       cat.mesh.position.y = Math.sin(Date.now() * 0.003) * 0.05;
 
     } else if (cat.state === 'hostile') {

@@ -216,7 +216,10 @@ function animate(now) {
       hud.showStatus('Your companion has fallen! 💔');
     }
   });
-  hud.updateCompanionHP(tortoiseshell.isAlly ? tortoiseshell.hp : null, 30);
+  hud.updateCompanionHP(
+    tortoiseshell.isAlly ? tortoiseshell.hp : null, 30,
+    tortoiseshell.isAlly ? tortoiseshell.hunger : null, 10
+  );
   const tsMilestone = Math.floor(score / 30);
   if (tsMilestone > Math.floor(lastTortoiseshellScore / 30)) {
     if (!tortoiseshell.active) {
@@ -361,9 +364,14 @@ function handleInteract() {
 function handleEat() {
   const type = inventory.getSelectedType();
   if (!type) { hud.showStatus('Select a food item with ↑↓ first'); return; }
-  if (player.eat(type)) {
+  const share = tortoiseshell.isAlly;
+  const result = player.eat(type, share);
+  if (result > 0) {
+    if (share) tortoiseshell.feed(result);
     inventory.remove(type);
-    hud.showStatus('Ate ' + fmtItem(type) + ' 😋');
+    hud.showStatus(share
+      ? 'Shared ' + fmtItem(type) + ' with companion 💗'
+      : 'Ate ' + fmtItem(type) + ' 😋');
   } else {
     hud.showStatus("Can't eat that!");
   }

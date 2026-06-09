@@ -152,11 +152,12 @@ export class Player {
     }
   }
 
-  eat(itemType) {
+  eat(itemType, share = false) {
     const val = FOOD_VALUES[itemType];
-    if (!val) return false;
-    this.hunger = Math.min(MAX_HUNGER, this.hunger + val);
-    return true;
+    if (!val) return 0;
+    const myShare = share ? val / 2 : val;
+    this.hunger = Math.min(MAX_HUNGER, this.hunger + myShare);
+    return share ? val / 2 : 0; // returns companion's share (or 0 if not sharing)
   }
 
   _regen(delta) {

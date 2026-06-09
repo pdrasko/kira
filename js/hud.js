@@ -27,10 +27,20 @@ export class HUD {
 
     container.innerHTML = `
       <div style="color:#ff69b4;font-size:11px;letter-spacing:2px;margin-bottom:4px;">COMPANION</div>
-      <div style="width:200px;height:14px;background:#1a1a1a;border-radius:7px;overflow:hidden;">
-        <div id="companion-hp-bar" style="height:100%;width:100%;background:#ff69b4;border-radius:7px;transition:width 0.25s ease,background 0.4s ease;"></div>
-      </div>
-      <div id="companion-hp-text" style="color:#ccc;font-size:10px;text-align:right;margin-top:2px;">30 / 30</div>`;
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div>
+          <div style="width:120px;height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden;">
+            <div id="companion-hp-bar" style="height:100%;width:100%;background:#ff69b4;border-radius:5px;transition:width 0.25s ease,background 0.4s ease;"></div>
+          </div>
+          <div id="companion-hp-text" style="color:#ccc;font-size:9px;text-align:right;margin-top:1px;">HP 30/30</div>
+        </div>
+        <div>
+          <div style="width:70px;height:10px;background:#1a1a1a;border-radius:5px;overflow:hidden;">
+            <div id="companion-hunger-bar" style="height:100%;width:100%;background:#f4a460;border-radius:5px;transition:width 0.4s ease,background 0.4s ease;"></div>
+          </div>
+          <div id="companion-hunger-text" style="color:#ccc;font-size:9px;text-align:right;margin-top:1px;">HGR 10</div>
+        </div>
+      </div>`;
 
     document.getElementById('hud').appendChild(container);
     this._companionContainer = container;
@@ -38,20 +48,23 @@ export class HUD {
     this._companionText = null;
   }
 
-  updateCompanionHP(current, max) {
+  updateCompanionHP(hp, maxHp, hunger, maxHunger) {
     if (!this._companionBar) {
-      this._companionBar  = document.getElementById('companion-hp-bar');
-      this._companionText = document.getElementById('companion-hp-text');
+      this._companionBar        = document.getElementById('companion-hp-bar');
+      this._companionText       = document.getElementById('companion-hp-text');
+      this._companionHungerBar  = document.getElementById('companion-hunger-bar');
+      this._companionHungerText = document.getElementById('companion-hunger-text');
     }
-    if (current === null) {
-      this._companionContainer.style.display = 'none';
-      return;
-    }
+    if (hp === null) { this._companionContainer.style.display = 'none'; return; }
     this._companionContainer.style.display = 'block';
-    const pct = Math.max(0, current / max) * 100;
-    this._companionBar.style.width = pct + '%';
-    this._companionText.textContent = Math.ceil(current) + ' / ' + max;
-    this._companionBar.style.background = pct > 50 ? '#ff69b4' : pct > 25 ? '#ffdc00' : '#ff4136';
+    const hpPct = Math.max(0, hp / maxHp) * 100;
+    this._companionBar.style.width = hpPct + '%';
+    this._companionText.textContent = 'HP ' + Math.ceil(hp) + '/' + maxHp;
+    this._companionBar.style.background = hpPct > 50 ? '#ff69b4' : hpPct > 25 ? '#ffdc00' : '#ff4136';
+    const hPct = Math.max(0, hunger / maxHunger) * 100;
+    this._companionHungerBar.style.width = hPct + '%';
+    this._companionHungerText.textContent = 'HGR ' + Math.ceil(hunger);
+    this._companionHungerBar.style.background = hPct > 50 ? '#f4a460' : hPct > 25 ? '#ffdc00' : '#ff4136';
   }
 
   updateHP(current, max) {
