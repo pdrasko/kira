@@ -31,6 +31,7 @@ export class TortoiseshellCat {
     const z = Math.sin(angle) * dist;
     const mesh = _buildMesh();
     mesh.position.set(x, 0, z);
+    mesh.scale.setScalar(1.55);
     this.scene.add(mesh);
     this.cat = {
       mesh, state: 'wander',
