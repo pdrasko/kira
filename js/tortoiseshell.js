@@ -31,7 +31,7 @@ export class TortoiseshellCat {
     const z = Math.sin(angle) * dist;
     const mesh = _buildMesh();
     mesh.position.set(x, 0, z);
-    mesh.scale.setScalar(1.1);
+    mesh.scale.setScalar(1.0);
     this.scene.add(mesh);
     this.cat = {
       mesh, state: 'wander',
@@ -288,69 +288,68 @@ function _buildMesh() {
   const pink   = new THREE.MeshLambertMaterial({ color: 0xff88aa });
   const green  = new THREE.MeshLambertMaterial({ color: 0x66cc44 }); // green eyes
 
-  // Body — use orange as base
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), orange);
-  body.scale.set(1.1, 0.75, 1.45);
-  body.position.y = 0.5;
+  // Body — exactly matches player body
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), orange);
+  body.scale.set(1.2, 0.8, 1.6);
+  body.position.y = 0.7;
   g.add(body);
 
   // Black patch on back
-  const patch1 = new THREE.Mesh(new THREE.SphereGeometry(0.22, 7, 5), black);
+  const patch1 = new THREE.Mesh(new THREE.SphereGeometry(0.32, 7, 5), black);
   patch1.scale.set(0.9, 0.4, 0.7);
-  patch1.position.set(0.05, 0.7, -0.1);
+  patch1.position.set(0.1, 0.9, -0.15);
   g.add(patch1);
 
   // Cream patch on belly side
-  const patch2 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 7, 5), cream);
+  const patch2 = new THREE.Mesh(new THREE.SphereGeometry(0.26, 7, 5), cream);
   patch2.scale.set(0.8, 0.35, 0.6);
-  patch2.position.set(-0.1, 0.35, 0.2);
+  patch2.position.set(-0.15, 0.5, 0.25);
   g.add(patch2);
 
-  // Head
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 7), orange);
-  head.position.set(0, 0.9, 0.38);
+  // Head — matches player head scale (player uses 0.36)
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 10, 8), orange);
+  head.position.set(0, 1.22, 0.55);
   g.add(head);
 
   // Black head patch
-  const hpatch = new THREE.Mesh(new THREE.SphereGeometry(0.15, 7, 5), black);
+  const hpatch = new THREE.Mesh(new THREE.SphereGeometry(0.2, 7, 5), black);
   hpatch.scale.set(0.6, 0.55, 0.5);
-  hpatch.position.set(0.1, 0.95, 0.42);
+  hpatch.position.set(0.12, 1.28, 0.6);
   g.add(hpatch);
 
   // Ears
-  const earL = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 4), orange);
-  earL.position.set(-0.16, 1.14, 0.34);
+  const earL = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.26, 4), orange);
+  earL.position.set(-0.2, 1.5, 0.5);
   g.add(earL);
-  const earR = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 4), black);
-  earR.position.set(0.16, 1.14, 0.34);
+  const earR = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.26, 4), black);
+  earR.position.set(0.2, 1.5, 0.5);
   g.add(earR);
 
   // Eyes (green)
-  for (const ex of [-0.1, 0.1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 5), green);
-    eye.position.set(ex, 0.93, 0.64);
+  for (const ex of [-0.12, 0.12]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5), green);
+    eye.position.set(ex, 1.22, 0.88);
     g.add(eye);
   }
 
   // Nose
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.025, 5, 4), pink);
-  nose.position.set(0, 0.87, 0.66);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.03, 5, 4), pink);
+  nose.position.set(0, 1.15, 0.9);
   g.add(nose);
 
   // Tail
-  const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 0.65, 5), orange);
+  const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.025, 0.8, 5), orange);
   tail.rotation.z = 0.7;
-  tail.position.set(0, 0.65, -0.55);
+  tail.position.set(0, 0.85, -0.75);
   g.add(tail);
 
   // Legs
-  const legCols = [orange, black, orange, black];
   for (const [[lx, lz], mat] of [
-    [[-0.28, 0.3], orange], [[0.28, 0.3], black],
-    [[-0.25, -0.3], black], [[0.25, -0.3], orange],
+    [[-0.35, 0.38], orange], [[0.35, 0.38], black],
+    [[-0.32, -0.38], black], [[0.32, -0.38], orange],
   ]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.055, 0.35, 5), mat);
-    leg.position.set(lx, 0.18, lz);
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.065, 0.45, 5), mat);
+    leg.position.set(lx, 0.22, lz);
     g.add(leg);
   }
 
