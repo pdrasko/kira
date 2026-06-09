@@ -1,11 +1,20 @@
 export class HUD {
   constructor() {
-    this.hpBar    = document.getElementById('hp-bar-inner');
-    this.hpText   = document.getElementById('hp-text');
-    this.scoreEl  = document.getElementById('score-display');
-    this.statusEl = document.getElementById('status-msg');
+    this.hpBar      = document.getElementById('hp-bar-inner');
+    this.hpText     = document.getElementById('hp-text');
+    this.hungerBar  = document.getElementById('hunger-bar-inner');
+    this.hungerText = document.getElementById('hunger-text');
+    this.scoreEl    = document.getElementById('score-display');
+    this.statusEl   = document.getElementById('status-msg');
     this.statusTimer = 0;
     this._buildCompanionHP();
+  }
+
+  updateHunger(current, max) {
+    const pct = Math.max(0, current / max) * 100;
+    this.hungerBar.style.width = pct + '%';
+    this.hungerText.textContent = Math.ceil(current);
+    this.hungerBar.style.background = pct > 50 ? '#f4a460' : pct > 25 ? '#ffdc00' : '#ff4136';
   }
 
   _buildCompanionHP() {

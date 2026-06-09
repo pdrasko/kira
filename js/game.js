@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { initInput, KeyState, syncFrameFlags,
          enterJustPressed, iJustPressed, bJustPressed, qJustPressed,
-         upJustPressed, downJustPressed } from './input.js';
+         upJustPressed, downJustPressed, fJustPressed } from './input.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { spawnEnemies, respawnEnemies } from './enemies.js';
@@ -249,12 +249,14 @@ function animate(now) {
     if (enterJustPressed) handleInteract();
     if (qJustPressed)     _toggleBuildMode();
     if (iJustPressed) inventory.toggle();
+    if (fJustPressed) handleEat();
     if (KeyState.escape) {
       if (inventory.visible) inventory.hide();
     }
   }
 
   hud.updateHP(player.hp, player.maxHp);
+  hud.updateHunger(player.hunger, player.maxHunger);
   hud.updateScore(score);
   hud.tick(delta);
 
@@ -355,6 +357,17 @@ function handleInteract() {
 }
 
 // ─── Build mode: pick up a placed basket or cheese ───────────────────────────
+
+function handleEat() {
+  const type = inventory.getSelectedType();
+  if (!type) { hud.showStatus('Select a food item with ↑↓ first'); return; }
+  if (player.eat(type)) {
+    inventory.remove(type);
+    hud.showStatus('Ate ' + fmtItem(type) + ' 😋');
+  } else {
+    hud.showStatus("Can't eat that!");
+  }
+}
 
 function handleBuildPickup() {
   const picked = trapManager.pickupNearby(player.getPosition(), inventory);

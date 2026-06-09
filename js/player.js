@@ -3,19 +3,31 @@ import * as THREE from 'three';
 const SPEED          = 6;
 const JUMP_VEL       = 8;
 const GRAVITY        = -22;
-const CLIMB_SPEED    = 3.8;    // upward speed while holding Space on a tree
-const SLIDE_GRAVITY  = 5;      // gentle pull-down while on tree not climbing
-const SLIDE_MAX_DOWN = 1.2;    // max slide speed downward
-const TREE_RADIUS    = 0.85;   // proximity to trunk required to climb
-const TREE_MAX_H     = 7.0;    // max climb height (just below canopy)
+const CLIMB_SPEED    = 3.8;
+const SLIDE_GRAVITY  = 5;
+const SLIDE_MAX_DOWN = 1.2;
+const TREE_RADIUS    = 0.85;
+const TREE_MAX_H     = 7.0;
 const MAX_HP         = 30;
+const MAX_HUNGER     = 100;
+const HUNGER_DRAIN   = 1.5;   // per second
+const STARVE_DAMAGE  = 1;     // hp lost per starve tick
+const STARVE_TICK    = 4;     // seconds between starve damage
 const REGEN_INTERVAL = 3;
 const BOUNDARY       = 47;
+
+const FOOD_VALUES = {
+  cheese: 30, fishbone: 25, rotten_apple: 15,
+  bean_can: 20, tincan: 15, sock: 5,
+};
 
 export class Player {
   constructor(scene, inventory) {
     this.maxHp        = MAX_HP;
     this.hp           = MAX_HP;
+    this.hunger       = MAX_HUNGER;
+    this.maxHunger    = MAX_HUNGER;
+    this._starveTimer = 0;
     this.velocity     = new THREE.Vector3();
     this.onGround     = true;
     this.isHiding     = false;
@@ -40,6 +52,7 @@ export class Player {
     this._move(delta, KeyState, cameraYaw);
     this._applyGravity(delta, KeyState);
     this._regen(delta);
+    this._updateHunger(delta);
     if (this.damageCooldown > 0) this.damageCooldown -= delta;
   }
 
@@ -124,6 +137,26 @@ export class Player {
       this.mesh.position.y = TREE_MAX_H;
       this.velocity.y = 0;
     }
+  }
+
+  _updateHunger(delta) {
+    this.hunger = Math.max(0, this.hunger - HUNGER_DRAIN * delta);
+    if (this.hunger === 0) {
+      this._starveTimer += delta;
+      if (this._starveTimer >= STARVE_TICK) {
+        this._starveTimer = 0;
+        this.hp = Math.max(0, this.hp - STARVE_DAMAGE);
+      }
+    } else {
+      this._starveTimer = 0;
+    }
+  }
+
+  eat(itemType) {
+    const val = FOOD_VALUES[itemType];
+    if (!val) return false;
+    this.hunger = Math.min(MAX_HUNGER, this.hunger + val);
+    return true;
   }
 
   _regen(delta) {

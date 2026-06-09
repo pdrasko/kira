@@ -303,11 +303,20 @@
   <!-- HUD overlay -->
   <div id="hud">
     <div id="hp-container">
-      <div id="hp-label">HP</div>
-      <div id="hp-bar-outer">
-        <div id="hp-bar-inner"></div>
+      <div style="display:flex;gap:14px;align-items:flex-start;">
+        <div>
+          <div id="hp-label">HP</div>
+          <div id="hp-bar-outer"><div id="hp-bar-inner"></div></div>
+          <div id="hp-text">30 / 30</div>
+        </div>
+        <div>
+          <div id="hunger-label" style="color:#f4a460;font-size:11px;letter-spacing:2px;margin-bottom:4px;">HUNGER</div>
+          <div style="width:90px;height:14px;background:#1a1a1a;border-radius:7px;overflow:hidden;">
+            <div id="hunger-bar-inner" style="height:100%;width:100%;background:#f4a460;border-radius:7px;transition:width 0.4s ease,background 0.4s ease;"></div>
+          </div>
+          <div id="hunger-text" style="color:#ccc;font-size:10px;text-align:right;margin-top:2px;">100</div>
+        </div>
       </div>
-      <div id="hp-text">30 / 30</div>
     </div>
     <div id="score-display">Score: 0</div>
     <div id="status-msg" style="opacity:0"></div>
@@ -348,20 +357,20 @@
   <script type="importmap">
     { "imports": {
         "three":            "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
-        "./js/game.js":     "./js/game.js?v=1.0.50",
-        "./js/player.js":   "./js/player.js?v=1.0.50",
-        "./js/input.js":    "./js/input.js?v=1.0.50",
-        "./js/world.js":    "./js/world.js?v=1.0.50",
-        "./js/enemies.js":  "./js/enemies.js?v=1.0.50",
-        "./js/items.js":    "./js/items.js?v=1.0.50",
-        "./js/inventory.js":"./js/inventory.js?v=1.0.50",
-        "./js/traps.js":    "./js/traps.js?v=1.0.50",
-        "./js/hud.js":      "./js/hud.js?v=1.0.50",
-        "./js/camera.js":   "./js/camera.js?v=1.0.50",
-        "./js/combat.js":   "./js/combat.js?v=1.0.50",
-        "./js/questcat.js":      "./js/questcat.js?v=1.0.50",
-        "./js/tortoiseshell.js": "./js/tortoiseshell.js?v=1.0.50",
-        "./js/version.js":       "./js/version.js?v=1.0.50"
+        "./js/game.js":     "./js/game.js?v=1.0.62",
+        "./js/player.js":   "./js/player.js?v=1.0.62",
+        "./js/input.js":    "./js/input.js?v=1.0.62",
+        "./js/world.js":    "./js/world.js?v=1.0.62",
+        "./js/enemies.js":  "./js/enemies.js?v=1.0.62",
+        "./js/items.js":    "./js/items.js?v=1.0.62",
+        "./js/inventory.js":"./js/inventory.js?v=1.0.62",
+        "./js/traps.js":    "./js/traps.js?v=1.0.62",
+        "./js/hud.js":      "./js/hud.js?v=1.0.62",
+        "./js/camera.js":   "./js/camera.js?v=1.0.62",
+        "./js/combat.js":   "./js/combat.js?v=1.0.62",
+        "./js/questcat.js":      "./js/questcat.js?v=1.0.62",
+        "./js/tortoiseshell.js": "./js/tortoiseshell.js?v=1.0.62",
+        "./js/version.js":       "./js/version.js?v=1.0.62"
     } }
   </script>
   <script type="module">
