@@ -9,16 +9,16 @@ const SLIDE_MAX_DOWN = 1.2;
 const TREE_RADIUS    = 0.85;
 const TREE_MAX_H     = 7.0;
 const MAX_HP         = 30;
-const MAX_HUNGER     = 100;
-const HUNGER_DRAIN   = 1.5;   // per second
+const MAX_HUNGER     = 10;
+const HUNGER_DRAIN   = 0.05;  // 1 unit per 20 seconds
 const STARVE_DAMAGE  = 1;     // hp lost per starve tick
 const STARVE_TICK    = 4;     // seconds between starve damage
 const REGEN_INTERVAL = 3;
 const BOUNDARY       = 47;
 
 const FOOD_VALUES = {
-  cheese: 30, fishbone: 25, rotten_apple: 15,
-  bean_can: 20, tincan: 15, sock: 5,
+  cheese: 3, fishbone: 2.5, rotten_apple: 1.5,
+  bean_can: 2, tincan: 1.5, sock: 0.5,
 };
 
 export class Player {
