@@ -25,6 +25,46 @@ At the base of the stairs, set into the back wall, a steel door waits. Near the 
 [[Try the steel door->Steel Door]]
 [[Stare into the dark to the left->Dark Corner]]
 [[Try the entrance behind you->Mansion Entrance]]
+[[Look at Alex->Alex]]
+[[Look at Shelly->Shelly]]
+[[Look at Marcus->Marcus]]
+[[Look at Jenna->Jenna]]
+[[Look at Tyler->Tyler]]
+
+:: Alex
+! Alex
+
+He's close by, arms crossed, eyes moving over the room the same way yours are.
+
+[[Back->Entrance Hall]]
+
+:: Shelly
+! Shelly
+
+She's gone quiet, standing near the stairs, waiting to see what everyone else does first.
+
+[[Back->Entrance Hall]]
+
+:: Marcus
+! Marcus
+
+He's already edging toward the dark corner before anyone's agreed that's a good idea.
+
+[[Back->Entrance Hall]]
+
+:: Jenna
+! Jenna
+
+She's keeping her back to the wall, watching the steel door like it might open on its own.
+
+[[Back->Entrance Hall]]
+
+:: Tyler
+! Tyler
+
+He hasn't said anything since the door shut. He's just staring at the blood on the chair.
+
+[[Back->Entrance Hall]]
 
 :: Power Cable
 You crouch down for a closer look. The cable is thick, sheathed in silver, clearly meant to carry serious power to whatever this place used to run.
