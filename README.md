@@ -5,6 +5,8 @@
 
 > Play the interactive story at [https://pdrasko.github.io/kira/kira_story/](https://pdrasko.github.io/kira/kira_story/) — see [`kira_story/README.md`](kira_story/README.md).
 
+> Play another interactive story at [https://pdrasko.github.io/kira/marko_story/](https://pdrasko.github.io/kira/marko_story/) — see [`marko_story/README.md`](marko_story/README.md).
+
 ## Use as Extension
 
 This repository can be added as an **extension** in MakeCode.

@@ -1,0 +1,20 @@
+:: StoryTitle
+Marko Story
+
+:: StoryData
+{
+    "ifid": "2C8E3D5B-7F4A-4C8B-AD2E-000000000001",
+    "format": "SugarCube",
+    "format-version": "2.37.3",
+    "start": "Start"
+}
+
+:: Start
+Welcome to //Marko Story//.
+
+This is a placeholder opening passage. The real story hasn't been written yet — Claude and the author are still working out what it's about.
+
+[[Continue->Placeholder]]
+
+:: Placeholder
+More soon.
