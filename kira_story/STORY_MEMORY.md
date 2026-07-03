@@ -33,18 +33,20 @@ protagonist, core cast, world rules, tone, format. Empty until the first
 
 ## Hot (recent, full detail)
 
-- **Stairs** (fork passage, just past the Entrance Hall). The party
-  starts climbing; a few steps up, a scream cuts through the house from
-  somewhere back down below. Everyone stops and looks to Kira (the
-  player) to decide. Two live branches currently exist — which one is
-  canon going forward is an open author decision, not yet resolved:
+- **Stairs** (fork passage, just past the Entrance Hall). Kira goes up
+  the (wooden) staircase **alone** — the five friends stay behind at the
+  bottom, none willing to go first. A few steps up, a scream cuts
+  through the house from back down below, right where she left them.
+  Kira freezes, alone, and has to decide without anyone else. Two live
+  branches currently exist — which one is canon going forward is an
+  open author decision, not yet resolved:
   - **Upper Landing** (if "keep climbing"): staircase ends at a long
     hallway, doors shut on both sides, gone quiet again. Frontier of
     written content — no passage continues from here yet.
   - **Back Down The Stairs** (if "go back down and investigate"): Kira
-    goes back down alone — expected the other five right behind her,
-    but arrives in the Entrance Hall to find Alex, Shelly, Marcus,
-    Jenna, and Tyler all gone. Not visible anywhere in the room. Room
+    goes back down expecting to find the five exactly where she left
+    them, but the entrance hall is empty — Alex, Shelly, Marcus, Jenna,
+    and Tyler all gone. Not visible anywhere in the room. Room
     itself is physically unchanged (cut cable, broken chairs, locked
     steel door all as before) — only the five friends are missing.
     Frontier of written content — no passage continues from here yet.
