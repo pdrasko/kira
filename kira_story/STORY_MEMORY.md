@@ -14,11 +14,13 @@ protagonist, core cast, world rules, tone, format. Empty until the first
 `/story` session establishes it.
 
 - **Genre/tone**: horror / mystery, night, trapped, evidence of violence.
-- **Setup**: the player and five friends (unnamed so far) are trapped
-  inside a dark gray-stone mansion at night; the entrance door shut
-  behind them and is locked.
-- **Protagonist**: working assumption is the player character is Kira
-  (matches project/repo name) — not yet confirmed by the author.
+- **Setup**: the player and five friends are trapped inside a dark
+  gray-stone mansion at night; the entrance door shut behind them and
+  is locked.
+- **Protagonist**: Kira (matches project/repo name) — confirmed.
+- **The five friends**: Alex, Shelly, Marcus, Jenna, and Tyler.
+  No personalities assigned yet by design — plain names, characterized
+  through the story as it goes rather than upfront.
 - Interaction style established: hub-style room passages with
   "examine X" links that branch to a short description passage and
   link `Back` to the hub, rather than consuming the object or advancing
@@ -66,7 +68,6 @@ just enough to keep continuity, not enough to reconstruct the scene.
 
 Running list of unresolved story questions to raise next session.
 
-- Is the protagonist Kira? What are the five friends' names?
 - Where next: up the stairs, into the dark corner, or something else
   (a search of the ground floor, a friend reacting to something)?
 - Is the "something" behind the claw marks/blood a supernatural
