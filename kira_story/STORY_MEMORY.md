@@ -25,6 +25,11 @@ protagonist, core cast, world rules, tone, format. Empty until the first
   "examine X" links that branch to a short description passage and
   link `Back` to the hub, rather than consuming the object or advancing
   plot on examination.
+- Looking at a friend uses the same examine pattern, but the passage
+  opens with a `!` header of their name (renders as `<h1>`) — a
+  nameplate-style label above a one-line reaction, per author request.
+  Keep these reactions light/neutral (no personality traits assigned)
+  — just what they're doing/looking at in the moment.
 
 ## Hot (recent, full detail)
 
