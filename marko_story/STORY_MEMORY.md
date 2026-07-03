@@ -15,6 +15,9 @@ Structure: **Canon** never gets compressed. Everything else ages from
   change mechanics or branching.
 - **Setting**: urban rooftops and alleys. Marko's family lives on a
   rusted fire escape three floors above an alley.
+- **Family**: father **Alex**, an orange tabby; mother **Bella**, a
+  red-and-black cat; littermate **Poofball**, a young male kitten with
+  reddish-black stripes on white fur (other littermates unnamed).
 - **Inciting incident**: a pigeon startles the family; Marko loses his
   footing and falls from the fire escape, landing in the alley below,
   separated from his mother and littermates. Family's fate is left
@@ -32,14 +35,15 @@ Structure: **Canon** never gets compressed. Everything else ages from
 
 - **Opening scene, just written (Start → WakeUp).** Passages: `Start`
   (age picker) → `AgeKitten`/`AgeYoung`/`AgeAdult`/`AgeOld` (set `$age`,
-  `$ageDesc`) → `Rooftop` (establishes mother + littermates on the fire
-  escape, a pigeon bursts from a bakery vent, everyone startles) →
-  `Fall` (Marko falls past the fire escape landings, hits a garbage
+  `$ageDesc`) → `Rooftop` (establishes father Alex, mother Bella, and
+  littermates including Poofball on the fire escape; a pigeon bursts
+  from a bakery vent, everyone startles) → `Fall` (Marko falls past the
+  fire escape landings, hears Bella and Alex call out, hits a garbage
   bag/cardboard, blacks out) → `AlleyLanding` (wakes dazed, calls for
-  mom, no answer, no way back up; **first real choice**: shelter under
-  dumpster / behind crates / in a cardboard box — three short flavor
-  passages, `ShelterDumpster`/`ShelterCrates`/`ShelterBox`, all
-  reconverge) → `Asleep` (exhausted, dreams of the fire escape) →
+  Mom/Dad/Poofball, no answer, no way back up; **first real choice**:
+  shelter under dumpster / behind crates / in a cardboard box — three
+  short flavor passages, `ShelterDumpster`/`ShelterCrates`/`ShelterBox`,
+  all reconverge) → `Asleep` (exhausted, dreams of the fire escape) →
   `WakeUp` (wakes at dawn, alley empty, starts walking, finds a door
   propped open with warm air/cooking smell coming through).
   **Left off**: `WakeUp` ends on the door as a cliffhanger — no
@@ -63,5 +67,5 @@ Structure: **Canon** never gets compressed. Everything else ages from
   deliberately rather than improvising alone.
 - Should Marko's family ever be confirmed alive/found, or is at least
   one ending meant to leave them lost for good?
-- Any named characters wanted yet (mother's name, littermates' names,
-  or do they stay unnamed/background)?
+- Are there other named littermates besides Poofball, or does he stay
+  the only one singled out by name?

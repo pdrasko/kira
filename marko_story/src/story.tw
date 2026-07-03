@@ -42,16 +42,16 @@ But first things first — how old are you?
 [[Up on the fire escape->Rooftop]]
 
 :: Rooftop
-You are <<print $ageDesc>>. Up here, three floors above the alley, the rusted fire escape is home — the whole family strung out along the iron grating in the last of the evening sun: your mother grooming one ear flat, your littermates tangled in a heap by the railing, tails twitching in their sleep.
+You are <<print $ageDesc>>. Up here, three floors above the alley, the rusted fire escape is home — the whole family strung out along the iron grating in the last of the evening sun: your father Alex, an orange tabby, dozing with one eye cracked open on the top rail; your mother Bella, red-and-black fur catching the light, grooming one ear flat; and tangled in a heap by the railing, your littermates — including Poofball, small and restless, reddish-black stripes over white fur, tail twitching in his sleep.
 
 It's the safest place in the world, right up until it isn't.
 
-A pigeon explodes out of the bakery vent below, wings hammering the air, and every cat on that fire escape flinches at once. Your mother's head snaps up. Your littermates scatter. And your paw — reaching for a perch that was there a second ago — finds nothing but rusted air.
+A pigeon explodes out of the bakery vent below, wings hammering the air, and every cat on that fire escape flinches at once. Alex is on his feet in an instant. Bella's head snaps up. Poofball and the rest of the litter scatter. And your paw — reaching for a perch that was there a second ago — finds nothing but rusted air.
 
 [[The rail gives way->Fall]]
 
 :: Fall
-The rooftop tilts. The world becomes a blur of brick and fire escape landings, each one clanging past just out of reach of your scrabbling claws. Somewhere above, you hear your mother yowl your name into the noise, and then the sound is gone, swallowed by wind and your own heartbeat.
+The rooftop tilts. The world becomes a blur of brick and fire escape landings, each one clanging past just out of reach of your scrabbling claws. Somewhere above, you hear Bella yowl your name into the noise, Alex right behind her, and then the sound is gone, swallowed by wind and your own heartbeat.
 
 You hit something soft — a split garbage bag, damp cardboard, the give of it knocking the breath clean out of you — and then you hit the ground, and everything goes quiet.
 
@@ -60,9 +60,11 @@ You hit something soft — a split garbage bag, damp cardboard, the give of it k
 :: AlleyLanding
 You come back to yourself slowly. Everything smells wrong down here — wet brick, old grease, a city block's worth of garbage — and nothing sounds like home.
 
-"Mom?"
+"Mom? Dad?"
 
 Nothing.
+
+"Poofball?"
 
 You call again, and again, until your throat is raw and the alley has swallowed every answer you might have gotten. The fire escape is directly above you, but it might as well be the moon. There's no ladder down here, no way back up, and no cat left on this stretch of pavement but you.
 
