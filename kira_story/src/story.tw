@@ -9,6 +9,12 @@ Kira Story
     "start": "Entrance Hall"
 }
 
+:: StoryInit
+<<set $inventory to []>>
+
+:: StoryCaption
+<b>Inventory:</b> <<if $inventory.length is 0>>(empty)<<else>><<= $inventory.join(', ')>><</if>>
+
 :: Entrance Hall
 It started as a dare—somebody always says "I bet you won't," and somehow it's always you who proves them wrong. Now night presses against every window of the mansion, and there's no one left to prove anything to but yourself.
 
@@ -20,7 +26,7 @@ To your left, the dark is absolute. Whatever's over there, it doesn't want to be
 
 To your right, someone tried to make this place look lived-in, once. A table and a set of chairs lie toppled against the wall, their legs snapped clean through.
 
-At the base of the stairs, set into the back wall, a steel door waits. Near the entrance, a silver power cable trails off along the floor into the dark—cut clean through.
+At the base of the stairs, set into the back wall, a steel door waits. Near the entrance, a silver power cable trails off along the floor into the dark—cut clean through. Beside the stairs, half-hidden by the banister's shadow, sits a low wooden drawer.
 
 [[Examine the power cable->Power Cable]]
 [[Examine the broken furniture->Broken Furniture]]
@@ -28,6 +34,7 @@ At the base of the stairs, set into the back wall, a steel door waits. Near the 
 [[Stare into the dark to the left->Dark Corner]]
 [[Try the entrance behind you->Mansion Entrance]]
 [[Go up the stairs->Stairs]]
+[[Open the drawer by the stairs->Drawer]]
 [[Look at Alex->Alex]]
 [[Look at Shelly->Shelly]]
 [[Look at Marcus->Marcus]]
@@ -133,3 +140,42 @@ Alex. Shelly. Marcus. Jenna. Tyler. Gone. Not by the door, not against the wall,
 Everything else looks exactly like you left it—the cut cable, the broken chairs, the locked steel door. Nothing's changed except the five people who aren't in it anymore.
 
 The house is very, very quiet.
+
+:: Drawer
+The drawer sticks a little before it slides open. Inside: a box of matches, damp enough to warp the cardboard. A paperback with a broken spine. A thin, hand-bound notebook, its pages swollen like they've dried out more than once.
+
+<<if $inventory.includes('Wet Matches')>>\
+The box of wet matches is already in your pocket.
+<<else>>\
+[[Take the box of wet matches->Take Matches]]
+<</if>>
+[[Read the storybook->Storybook]]
+[[Read the notebook->Notebook]]
+
+[[Back->Entrance Hall]]
+
+:: Take Matches
+<<set $inventory.pushUnique('Wet Matches')>>
+You pick up the box and give it a shake. The matches inside rattle, soft and damp—not exactly reliable, but it's something.
+
+[[Back->Drawer]]
+
+:: Storybook
+! The Hollow Choir
+
+The cover's soft at the corners from being read too many times: ''THE HOLLOW CHOIR'', by Everett Marne.
+
+The back cover blurb is still legible. //Seven believers gather in an old house to call something down from between the stars. Only one of them lives to tell it. Some say the choir never stopped singing.//
+
+Someone's underlined passages throughout in pencil, pressed hard enough to tear the page in places.
+
+[[Back->Drawer]]
+
+:: Notebook
+! Notebook
+
+The pages are warped, like it's been wet and dried more than once. Whoever filled it wrote in small, careful handwriting, boxed in around the drawings—a skull sketched from three different angles, a plant with roots drawn thicker than its stem, symbols that don't match any alphabet you recognize.
+
+Some of the writing reads like instructions. You don't understand enough of it to know instructions for what.
+
+[[Back->Drawer]]

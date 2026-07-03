@@ -104,8 +104,10 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 		<div id="init-lacking"><p>Browser lacks capabilities required to play.</p><p>Upgrade or switch to another browser.</p></div>
 		<div id="init-loading"><div>Loading&hellip;</div></div>
 	</div>
-	<tw-storydata name="Kira Story" ifid="1B9D2C4A-6E3F-4B7A-9C1D-000000000001" startnode="1" creator="extwee" creator-version="2.3.18" format="SugarCube" format-version="2.37.3" options hidden>
-	<tw-passagedata pid="1" name="Entrance Hall" tags="" >It started as a dare—somebody always says &quot;I bet you won&apos;t,&quot; and somehow it&apos;s always you who proves them wrong. Now night presses against every window of the mansion, and there&apos;s no one left to prove anything to but yourself.
+	<tw-storydata name="Kira Story" ifid="1B9D2C4A-6E3F-4B7A-9C1D-000000000001" startnode="3" creator="extwee" creator-version="2.3.18" format="SugarCube" format-version="2.37.3" options hidden>
+	<tw-passagedata pid="1" name="StoryInit" tags="" >&lt;&lt;set $inventory to []&gt;&gt;</tw-passagedata>
+	<tw-passagedata pid="2" name="StoryCaption" tags="" >&lt;b&gt;Inventory:&lt;/b&gt; &lt;&lt;if $inventory.length is 0&gt;&gt;(empty)&lt;&lt;else&gt;&gt;&lt;&lt;= $inventory.join(&apos;, &apos;)&gt;&gt;&lt;&lt;/if&gt;&gt;</tw-passagedata>
+	<tw-passagedata pid="3" name="Entrance Hall" tags="" >It started as a dare—somebody always says &quot;I bet you won&apos;t,&quot; and somehow it&apos;s always you who proves them wrong. Now night presses against every window of the mansion, and there&apos;s no one left to prove anything to but yourself.
 
 You and your five friends—Alex, Shelly, Marcus, Jenna, and Tyler—stand just inside the entrance, and already the door has swung shut behind you.
 
@@ -115,7 +117,7 @@ To your left, the dark is absolute. Whatever&apos;s over there, it doesn&apos;t 
 
 To your right, someone tried to make this place look lived-in, once. A table and a set of chairs lie toppled against the wall, their legs snapped clean through.
 
-At the base of the stairs, set into the back wall, a steel door waits. Near the entrance, a silver power cable trails off along the floor into the dark—cut clean through.
+At the base of the stairs, set into the back wall, a steel door waits. Near the entrance, a silver power cable trails off along the floor into the dark—cut clean through. Beside the stairs, half-hidden by the banister&apos;s shadow, sits a low wooden drawer.
 
 [[Examine the power cable-&gt;Power Cable]]
 [[Examine the broken furniture-&gt;Broken Furniture]]
@@ -123,64 +125,65 @@ At the base of the stairs, set into the back wall, a steel door waits. Near the 
 [[Stare into the dark to the left-&gt;Dark Corner]]
 [[Try the entrance behind you-&gt;Mansion Entrance]]
 [[Go up the stairs-&gt;Stairs]]
+[[Open the drawer by the stairs-&gt;Drawer]]
 [[Look at Alex-&gt;Alex]]
 [[Look at Shelly-&gt;Shelly]]
 [[Look at Marcus-&gt;Marcus]]
 [[Look at Jenna-&gt;Jenna]]
 [[Look at Tyler-&gt;Tyler]]</tw-passagedata>
-	<tw-passagedata pid="2" name="Alex" tags="" >! Alex
+	<tw-passagedata pid="4" name="Alex" tags="" >! Alex
 
 He&apos;s close by, arms crossed, eyes moving over the room the same way yours are.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="3" name="Shelly" tags="" >! Shelly
+	<tw-passagedata pid="5" name="Shelly" tags="" >! Shelly
 
 She&apos;s gone quiet, standing near the stairs, waiting to see what everyone else does first.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="4" name="Marcus" tags="" >! Marcus
+	<tw-passagedata pid="6" name="Marcus" tags="" >! Marcus
 
 He&apos;s already edging toward the dark corner before anyone&apos;s agreed that&apos;s a good idea.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="5" name="Jenna" tags="" >! Jenna
+	<tw-passagedata pid="7" name="Jenna" tags="" >! Jenna
 
 She&apos;s keeping her back to the wall, watching the steel door like it might open on its own.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="6" name="Tyler" tags="" >! Tyler
+	<tw-passagedata pid="8" name="Tyler" tags="" >! Tyler
 
 He hasn&apos;t said anything since the door shut. He&apos;s just staring at the blood on the chair.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="7" name="Power Cable" tags="" >You crouch down for a closer look. The cable is thick, sheathed in silver, clearly meant to carry serious power to whatever this place used to run.
+	<tw-passagedata pid="9" name="Power Cable" tags="" >You crouch down for a closer look. The cable is thick, sheathed in silver, clearly meant to carry serious power to whatever this place used to run.
 
 It&apos;s cut. Not frayed, not chewed through—//cut//, clean and deliberate, like something wanted this house exactly this dark.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="8" name="Broken Furniture" tags="" >Up close, the damage is worse than it looked from across the room. The table&apos;s legs aren&apos;t just broken—they&apos;re snapped and splintered, like something slammed into them at speed. The chairs are worse: deep scratches gouge the wood, long and parallel, the kind claws leave.
+	<tw-passagedata pid="10" name="Broken Furniture" tags="" >Up close, the damage is worse than it looked from across the room. The table&apos;s legs aren&apos;t just broken—they&apos;re snapped and splintered, like something slammed into them at speed. The chairs are worse: deep scratches gouge the wood, long and parallel, the kind claws leave.
 
 And on the seat of the nearest chair, dark stains have soaked into the grain. You don&apos;t need good lighting to know what it is.
 
 Blood.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="9" name="Steel Door" tags="" >The door is cold under your hand, heavier than it has any right to be. You push. You pull. It doesn&apos;t budge—not rattle-in-the-frame stuck, but bolted-from-somewhere-else locked.
+	<tw-passagedata pid="11" name="Steel Door" tags="" >The door is cold under your hand, heavier than it has any right to be. You push. You pull. It doesn&apos;t budge—not rattle-in-the-frame stuck, but bolted-from-somewhere-else locked.
 
 Whatever&apos;s on the other side, it isn&apos;t opening for you. Not yet.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="10" name="Dark Corner" tags="" >You take a step toward the dark and immediately regret it—you can&apos;t see your own hand at arm&apos;s length. None of the others move to follow.
+	<tw-passagedata pid="12" name="Dark Corner" tags="" >You take a step toward the dark and immediately regret it—you can&apos;t see your own hand at arm&apos;s length. None of the others move to follow.
 
 Something about that dark doesn&apos;t feel empty.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="11" name="Mansion Entrance" tags="" >You turn back to the door you all just walked through and try the handle anyway, half-hoping it was some kind of mistake.
+	<tw-passagedata pid="13" name="Mansion Entrance" tags="" >You turn back to the door you all just walked through and try the handle anyway, half-hoping it was some kind of mistake.
 
 It&apos;s locked. From which side, you can&apos;t tell—but it&apos;s locked, and the mansion has no intention of letting you leave the way you came.
 
 [[Back-&gt;Entrance Hall]]</tw-passagedata>
-	<tw-passagedata pid="12" name="Stairs" tags="" >You start up the staircase alone, the wooden steps creaking under your weight. Nobody follows. Alex, Shelly, Marcus, Jenna, and Tyler stay put at the bottom, none of them in a hurry to go first.
+	<tw-passagedata pid="14" name="Stairs" tags="" >You start up the staircase alone, the wooden steps creaking under your weight. Nobody follows. Alex, Shelly, Marcus, Jenna, and Tyler stay put at the bottom, none of them in a hurry to go first.
 
 You&apos;re only a few steps up when a scream tears through the house. Short, sharp, and cut off almost as soon as it starts. It came from somewhere down below—right where you left them.
 
@@ -188,12 +191,12 @@ You freeze halfway up the stairs, alone, with no one there to decide this with y
 
 [[Keep climbing-&gt;Upper Landing]]
 [[Go back down and investigate-&gt;Back Down The Stairs]]</tw-passagedata>
-	<tw-passagedata pid="13" name="Upper Landing" tags="" >You keep climbing, taking the last steps two at a time, telling yourself whatever made that sound is a problem for later.
+	<tw-passagedata pid="15" name="Upper Landing" tags="" >You keep climbing, taking the last steps two at a time, telling yourself whatever made that sound is a problem for later.
 
 The staircase ends at a long hallway. Doors line both walls, all of them shut. Whatever screamed downstairs, up here it&apos;s gone quiet again—too quiet to feel like relief.
 
 You made it up. Whether that was the right call is still an open question.</tw-passagedata>
-	<tw-passagedata pid="14" name="Back Down The Stairs" tags="" >You spin around and take the stairs back down two at a time, expecting to find them exactly where you left them.
+	<tw-passagedata pid="16" name="Back Down The Stairs" tags="" >You spin around and take the stairs back down two at a time, expecting to find them exactly where you left them.
 
 You hit the bottom step and swing back into an empty entrance hall.
 
@@ -202,6 +205,37 @@ Alex. Shelly. Marcus. Jenna. Tyler. Gone. Not by the door, not against the wall,
 Everything else looks exactly like you left it—the cut cable, the broken chairs, the locked steel door. Nothing&apos;s changed except the five people who aren&apos;t in it anymore.
 
 The house is very, very quiet.</tw-passagedata>
+	<tw-passagedata pid="17" name="Drawer" tags="" >The drawer sticks a little before it slides open. Inside: a box of matches, damp enough to warp the cardboard. A paperback with a broken spine. A thin, hand-bound notebook, its pages swollen like they&apos;ve dried out more than once.
+
+&lt;&lt;if $inventory.includes(&apos;Wet Matches&apos;)&gt;&gt;\
+The box of wet matches is already in your pocket.
+&lt;&lt;else&gt;&gt;\
+[[Take the box of wet matches-&gt;Take Matches]]
+&lt;&lt;/if&gt;&gt;
+[[Read the storybook-&gt;Storybook]]
+[[Read the notebook-&gt;Notebook]]
+
+[[Back-&gt;Entrance Hall]]</tw-passagedata>
+	<tw-passagedata pid="18" name="Take Matches" tags="" >&lt;&lt;set $inventory.pushUnique(&apos;Wet Matches&apos;)&gt;&gt;
+You pick up the box and give it a shake. The matches inside rattle, soft and damp—not exactly reliable, but it&apos;s something.
+
+[[Back-&gt;Drawer]]</tw-passagedata>
+	<tw-passagedata pid="19" name="Storybook" tags="" >! The Hollow Choir
+
+The cover&apos;s soft at the corners from being read too many times: &apos;&apos;THE HOLLOW CHOIR&apos;&apos;, by Everett Marne.
+
+The back cover blurb is still legible. //Seven believers gather in an old house to call something down from between the stars. Only one of them lives to tell it. Some say the choir never stopped singing.//
+
+Someone&apos;s underlined passages throughout in pencil, pressed hard enough to tear the page in places.
+
+[[Back-&gt;Drawer]]</tw-passagedata>
+	<tw-passagedata pid="20" name="Notebook" tags="" >! Notebook
+
+The pages are warped, like it&apos;s been wet and dried more than once. Whoever filled it wrote in small, careful handwriting, boxed in around the drawings—a skull sketched from three different angles, a plant with roots drawn thicker than its stem, symbols that don&apos;t match any alphabet you recognize.
+
+Some of the writing reads like instructions. You don&apos;t understand enough of it to know instructions for what.
+
+[[Back-&gt;Drawer]]</tw-passagedata>
 </tw-storydata>
 	<script id="script-sugarcube" type="text/javascript">
 	/*! SugarCube JS */
