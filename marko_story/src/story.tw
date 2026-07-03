@@ -10,11 +10,97 @@ Marko Story
 }
 
 :: Start
-Welcome to //Marko Story//.
+You are Marko.
 
-This is a placeholder opening passage. The real story hasn't been written yet — Claude and the author are still working out what it's about.
+Before the world tips sideways and nothing is the same, you're just a cat on a warm rooftop three floors above the alley, tar and pigeon-grit under your paws, the smell of a bakery vent drifting up from somewhere below.
 
-[[Continue->Placeholder]]
+But first things first — how old are you?
 
-:: Placeholder
+[[A kitten, all paws and no sense yet->AgeKitten]]
+[[A young cat, quick and restless->AgeYoung]]
+[[A grown cat, steady and sure of yourself->AgeAdult]]
+[[An old cat, slow now but nothing surprises you anymore->AgeOld]]
+
+:: AgeKitten
+<<set $age to "kitten">>
+<<set $ageDesc to "barely bigger than the pigeons that share this roof, all clumsy paws and big ideas">>
+[[Up on the fire escape->Rooftop]]
+
+:: AgeYoung
+<<set $age to "young">>
+<<set $ageDesc to "fast and restless, the kind of cat who's first up every ladder">>
+[[Up on the fire escape->Rooftop]]
+
+:: AgeAdult
+<<set $age to "adult">>
+<<set $ageDesc to "steady on your feet in the way only a grown cat is, nothing about these rooftops rattles you">>
+[[Up on the fire escape->Rooftop]]
+
+:: AgeOld
+<<set $age to "old">>
+<<set $ageDesc to "slower these days, joints stiff in the mornings, but you've outlasted every stray that ever doubted you">>
+[[Up on the fire escape->Rooftop]]
+
+:: Rooftop
+You are <<print $ageDesc>>. Up here, three floors above the alley, the rusted fire escape is home — the whole family strung out along the iron grating in the last of the evening sun: your mother grooming one ear flat, your littermates tangled in a heap by the railing, tails twitching in their sleep.
+
+It's the safest place in the world, right up until it isn't.
+
+A pigeon explodes out of the bakery vent below, wings hammering the air, and every cat on that fire escape flinches at once. Your mother's head snaps up. Your littermates scatter. And your paw — reaching for a perch that was there a second ago — finds nothing but rusted air.
+
+[[The rail gives way->Fall]]
+
+:: Fall
+The rooftop tilts. The world becomes a blur of brick and fire escape landings, each one clanging past just out of reach of your scrabbling claws. Somewhere above, you hear your mother yowl your name into the noise, and then the sound is gone, swallowed by wind and your own heartbeat.
+
+You hit something soft — a split garbage bag, damp cardboard, the give of it knocking the breath clean out of you — and then you hit the ground, and everything goes quiet.
+
+[[...->AlleyLanding]]
+
+:: AlleyLanding
+You come back to yourself slowly. Everything smells wrong down here — wet brick, old grease, a city block's worth of garbage — and nothing sounds like home.
+
+"Mom?"
+
+Nothing.
+
+You call again, and again, until your throat is raw and the alley has swallowed every answer you might have gotten. The fire escape is directly above you, but it might as well be the moon. There's no ladder down here, no way back up, and no cat left on this stretch of pavement but you.
+
+Your legs are shaking. You need somewhere to hide, just for a little while, just until you can think straight.
+
+[[Squeeze under the dumpster->ShelterDumpster]]
+[[Duck behind a stack of crates->ShelterCrates]]
+[[Climb into a half-crushed cardboard box->ShelterBox]]
+
+:: ShelterDumpster
+The gap under the dumpster is tight and rank, but it's dark and low to the ground, and right now that feels like the only kind of safe that still exists.
+
+[[...->Asleep]]
+
+:: ShelterCrates
+The crates smell like old fish and rained-on wood, but they block the wind, and from back here you can watch the whole alley without anything watching you.
+
+[[...->Asleep]]
+
+:: ShelterBox
+The box has gone soft with old rain, but it folds around you like it was built for exactly your size, and for the first time since the fall, you stop shaking quite so hard.
+
+[[...->Asleep]]
+
+:: Asleep
+However you got there, sleep takes you before you're ready for it — the kind of sleep that isn't really rest, just your body giving out from everything the day already asked of it.
+
+You dream, if you dream at all, of the fire escape, of the shape of your mother's ear against the evening light. It doesn't last.
+
+[[Morning->WakeUp]]
+
+:: WakeUp
+You wake stiff and starving, with the particular ache of a body that fell further than it was built to fall. The alley looks different in daylight — smaller, meaner, and completely empty of anyone you know.
+
+Calling out again doesn't feel worth the effort this time. So you get up instead, paw by paw, and start walking — past the dumpster, past a drainpipe dripping something that isn't quite water, following the alley wherever it's willing to lead you.
+
+It leads you to a door.
+
+It's propped open perhaps an inch, just wide enough for a breath of warm air — and whatever's cooking on the other side — to reach you.
+
 More soon.

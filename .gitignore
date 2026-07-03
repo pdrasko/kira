@@ -13,3 +13,6 @@ _site
 
 # Twine (kira_story)
 kira_story/build/tools
+
+# Twine (marko_story)
+marko_story/build/tools
