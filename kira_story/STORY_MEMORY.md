@@ -41,14 +41,18 @@ protagonist, core cast, world rules, tone, format. Empty until the first
   - **Upper Landing** (if "keep climbing"): staircase ends at a long
     hallway, doors shut on both sides, gone quiet again. Frontier of
     written content — no passage continues from here yet.
-  - **Back Down The Stairs** (if "go back down and investigate"): party
-    returns to the Entrance Hall; all five friends are present and
-    accounted for — none of them screamed, room is unchanged from
-    before. Confirms the scream's source is NOT one of the five named
-    friends. Frontier of written content — no passage continues from
-    here yet.
-  - Open thread: what/who screamed is still completely unresolved. Not
-    one of the six party members (confirmed via the Back Down branch).
+  - **Back Down The Stairs** (if "go back down and investigate"): Kira
+    goes back down alone — expected the other five right behind her,
+    but arrives in the Entrance Hall to find Alex, Shelly, Marcus,
+    Jenna, and Tyler all gone. Not visible anywhere in the room. Room
+    itself is physically unchanged (cut cable, broken chairs, locked
+    steel door all as before) — only the five friends are missing.
+    Frontier of written content — no passage continues from here yet.
+  - Open thread: what/who screamed is still completely unresolved.
+  - Open thread: the five friends' disappearance is now a central
+    mystery on the "go back down" branch — no explanation given yet
+    (did they go somewhere, get taken, or simply not come down with
+    Kira at all?).
   - Open thread: need author direction on which branch to continue
     (or whether to develop both in parallel).
 
@@ -80,8 +84,11 @@ just enough to keep continuity, not enough to reconstruct the scene.
 Running list of unresolved story questions to raise next session.
 
 - Which branch continues: Upper Landing (kept climbing) or Back Down
-  The Stairs (went to investigate)? Or develop both?
+  The Stairs (went to investigate, friends now missing)? Or develop
+  both?
 - What/who screamed, if anything ever answers that?
+- Where did Alex, Shelly, Marcus, Jenna, and Tyler go (Back Down
+  branch)? Taken, hiding, never came down at all, something stranger?
 - The dark corner in the Entrance Hall was never entered — revisit
   later, or leave as an unresolved red herring?
 - Is the "something" behind the claw marks/blood a supernatural
