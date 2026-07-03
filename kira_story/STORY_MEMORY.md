@@ -30,9 +30,30 @@ protagonist, core cast, world rules, tone, format. Empty until the first
   nameplate-style label above a one-line reaction, per author request.
   Keep these reactions light/neutral (no personality traits assigned)
   — just what they're doing/looking at in the moment.
+- **Inventory system**: `$inventory` array, initialized empty in
+  `StoryInit`. Collectible items use `$inventory.pushUnique('Item
+  Name')` via a dedicated "Take X" passage, and a `StoryCaption`
+  passage displays `Inventory: <list or (empty)>` in the UI bar,
+  live-updating on navigation. Reuse this pattern for future pickups.
+  SugarCube markup note: bold is `''text''`, not `**text**`
+  (Markdown-style asterisks render literally, not as bold).
+- **Found items (drawer beside the stairs, Entrance Hall)**: a box of
+  wet matches (collectible), a storybook titled //The Hollow Choir// by
+  in-world horror author Everett Marne (about a cult of seven who
+  called something down and one survivor), and a hand-bound notebook
+  with skull/plant illustrations and unrecognized symbols that read
+  like instructions — implied occult/ritual content, not yet explained.
 
 ## Hot (recent, full detail)
 
+- **Drawer** (reachable from the Entrance Hall, doesn't require going
+  up the stairs first). Contains the wet matches, storybook, and
+  notebook detailed in Canon above. Matches are the first item in
+  `$inventory`; the books are read-only, no state change. Not yet
+  referenced anywhere else in the story — open thread on whether/how
+  the matches get used (something to light in the dark?) and whether
+  the notebook's occult content connects to the claw marks/blood/cut
+  cable from the Entrance Hall.
 - **Stairs** (fork passage, just past the Entrance Hall). Kira goes up
   the (wooden) staircase **alone** — the five friends stay behind at the
   bottom, none willing to go first. A few steps up, a scream cuts
