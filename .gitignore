@@ -10,3 +10,6 @@ _site
 *.tgz
 .header.json
 .simstate.json
+
+# Twine (kira_story)
+kira_story/build/tools

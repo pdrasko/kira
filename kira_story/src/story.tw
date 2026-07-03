@@ -1,0 +1,20 @@
+:: StoryTitle
+Kira Story
+
+:: StoryData
+{
+    "ifid": "1B9D2C4A-6E3F-4B7A-9C1D-000000000001",
+    "format": "SugarCube",
+    "format-version": "2.37.3",
+    "start": "Start"
+}
+
+:: Start
+Welcome to //Kira Story//.
+
+This is a placeholder opening passage. The real story hasn't been written yet — Claude and the author are still working out what it's about.
+
+[[Continue->Placeholder]]
+
+:: Placeholder
+More soon.
