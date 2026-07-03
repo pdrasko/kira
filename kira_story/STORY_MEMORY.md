@@ -61,9 +61,10 @@ protagonist, core cast, world rules, tone, format. Empty until the first
   Kira freezes, alone, and has to decide without anyone else. Two live
   branches currently exist — which one is canon going forward is an
   open author decision, not yet resolved:
-  - **Upper Landing** (if "keep climbing"): staircase ends at a long
-    hallway, doors shut on both sides, gone quiet again. Frontier of
-    written content — no passage continues from here yet.
+  - **Upper Landing** (if "keep climbing"): staircase ends at the
+    **second floor** — a long hallway, doors shut on both sides, gone
+    quiet again. Frontier of written content — no passage continues
+    from here yet.
   - **Back Down The Stairs** (if "go back down and investigate"): Kira
     goes back down expecting to find the five exactly where she left
     them, but the entrance hall is empty — Alex, Shelly, Marcus, Jenna,
