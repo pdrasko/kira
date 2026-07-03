@@ -14,9 +14,9 @@ protagonist, core cast, world rules, tone, format. Empty until the first
 `/story` session establishes it.
 
 - **Genre/tone**: horror / mystery, night, trapped, evidence of violence.
-- **Setup**: the player and five friends are trapped inside a dark
-  gray-stone mansion at night; the entrance door shut behind them and
-  is locked.
+- **Setup**: Kira took a dare to go into the mansion — the reason the
+  group is there at all. Now she and her five friends are trapped
+  inside, at night, entrance door shut behind them and locked.
 - **Protagonist**: Kira (matches project/repo name) — confirmed.
 - **The five friends**: Alex, Shelly, Marcus, Jenna, and Tyler.
   No personalities assigned yet by design — plain names, characterized
