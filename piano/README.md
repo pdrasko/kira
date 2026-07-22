@@ -8,9 +8,15 @@ stats. No build step — open `index.html` (or visit
 
 ## Try it
 
-- Play the on-screen keyboard with clicks/taps, or plug in a real MIDI
-  keyboard/controller (Chrome/Edge on desktop or Android — Web MIDI isn't
-  available on iOS) and connect it from **Profile → Connect MIDI device**.
+- **A real USB-MIDI keyboard/controller is required to make progress.**
+  The on-screen keyboard is a *display only* — it lights up to show what's
+  expected and what's being played, but clicking/tapping it does nothing;
+  it deliberately cannot advance a lesson, score an attempt, or record a
+  note. This is the same approach as `../midi_keyboard/`: real Web MIDI
+  input, nothing simulated. The app tries to connect automatically on
+  load (Chrome/Edge on desktop or Android — Web MIDI isn't available on
+  iOS); the header's MIDI chip and a banner on the Player/Record screens
+  show connection status and offer a manual **Connect MIDI** button.
 - **Path** has a 2-chapter, 10-lesson built-in curriculum. Chapter 1,
   "Starter Studies," mirrors the topic order of PianoNanny.com's well-known
   free 8-lesson beginner course — keyboard orientation, black keys/sharps,
@@ -28,6 +34,10 @@ stats. No build step — open `index.html` (or visit
   piece — cursor moving, keyboard lighting up, synth sounding — with no
   input needed and no attempt recorded, so you can hear/see what a piece
   sounds like before practicing it.
+- Mode (Wait/Performance), tempo, loop range, and the metronome all live
+  behind the **⋮** button next to Start/Preview, so the player screen stays
+  uncluttered while you're actually practicing — open it to configure,
+  close it (click outside) and it's out of the way again.
 
 ## How practicing works
 
@@ -63,10 +73,11 @@ js/
   seed-catalog.js     built-in chapters/lessons/songs (hand-authored MusicXML)
   musicxml-builder.js tiny helper to author MusicXML without hand-typing it
   note-bus.js         single pub/sub for "note on/off", regardless of source
-  midi.js             Web MIDI input -> note-bus
-  keyboard.js          virtual on-screen keyboard -> note-bus, + highlight states
-  synth.js            WebAudio synth so silent MIDI controllers / the virtual
-                       keyboard / played-back recordings are actually audible
+  midi.js             Web MIDI input -> note-bus (the only real input source)
+  keyboard.js          read-only virtual keyboard: note-bus -> highlight states,
+                       never the other way around (no click-to-play)
+  synth.js            WebAudio synth so silent MIDI controllers / demo preview
+                       / played-back recordings are actually audible
   metronome.js         WebAudio lookahead-scheduled metronome
   sheetmusic.js         OpenSheetMusicDisplay wrapper: cursor stepping,
                        expected-notes-under-cursor, measure jump/loop
@@ -156,3 +167,7 @@ by hand into `musicxml-builder.js`-style note lists and swapped in.
   `.musicxml`/`.xml` — unzip first.
 - The Duolingo-style path alternates two columns; it doesn't yet do a full
   serpentine layout with connecting line art.
+- There is intentionally no keyboard/mouse input fallback for practice or
+  recording — a real MIDI device is required. Development/testing without
+  hardware simulates it by calling `note-bus.js`'s `emitNoteOn`/`emitNoteOff`
+  directly (exactly what `midi.js` does for a real MIDI message).

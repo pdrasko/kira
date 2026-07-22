@@ -4,6 +4,7 @@ import { getCurrentProfile, createProfile } from './app-state.js';
 import { getDailyProgressMinutes } from './stats.js';
 import { registerRoute, startRouter, setOnNavigate, navigate } from './router.js';
 import { logEvent } from './events.js';
+import { connectMidi, onMidiStatusChange } from './midi.js';
 import { renderHome } from './screens/home.js';
 import { renderPath } from './screens/path.js';
 import { renderRepertoire } from './screens/repertoire.js';
@@ -24,6 +25,28 @@ async function refreshHeader() {
   ring.style.setProperty('--pct', String(pct));
   ring.title = `${minutes.toFixed(0)}/${profile.dailyGoalMinutes} min practiced today`;
   document.getElementById('header-streak').textContent = profile.streakCount ? `🔥 ${profile.streakCount}` : '';
+}
+
+function wireMidiChip() {
+  const chip = document.getElementById('header-midi-chip');
+  onMidiStatusChange(({ supported, inputs }) => {
+    if (!supported) {
+      chip.textContent = '🎹 MIDI: unsupported browser';
+      chip.className = 'midi-chip unsupported';
+      chip.title = 'Web MIDI needs Chrome or Edge (desktop or Android) — not available on iOS.';
+      return;
+    }
+    if (inputs.length === 0) {
+      chip.textContent = '🎹 MIDI: connect keyboard';
+      chip.className = 'midi-chip disconnected';
+      chip.title = 'No MIDI device detected. Click to grant permission / plug in a USB-MIDI keyboard.';
+    } else {
+      chip.textContent = `🎹 MIDI: ${inputs.length} connected`;
+      chip.className = 'midi-chip connected';
+      chip.title = inputs.map((i) => i.name).join(', ');
+    }
+  });
+  chip.addEventListener('click', () => connectMidi());
 }
 
 function wireNav() {
@@ -96,4 +119,6 @@ async function boot() {
 
 window.addEventListener('kira:profile-updated', refreshHeader);
 
+wireMidiChip();
+connectMidi(); // try automatically so a returning visitor with permission already granted doesn't have to click anything
 boot();

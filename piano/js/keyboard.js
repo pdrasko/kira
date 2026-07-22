@@ -1,10 +1,15 @@
 // Custom virtual piano keyboard. Renders plain <div> keys (no SVG/canvas)
-// so state classes (expected/correct/wrong/held) are just CSS. Clicking or
-// tapping a key feeds the shared note bus with source 'keyboard', exactly
-// like a real MIDI key would — this is what lets someone practice (and
-// lets us test this app) without any hardware plugged in.
+// so state classes (expected/correct/wrong/held) are just CSS.
+//
+// This is a READ-ONLY display, not an input device: it reflects whatever
+// comes in on the shared note bus (real MIDI input, or a demo/preview
+// walking through a song) by lighting up held/expected/correct/wrong keys,
+// but it never originates notes itself. Progress — practice scoring,
+// recordings, everything — is expected to come from a real USB-MIDI
+// keyboard/controller (see midi.js), the same way the midi_keyboard.html
+// proof of concept worked. There is deliberately no click/tap-to-play here.
 
-import { emitNoteOn, emitNoteOff, onNoteOn, onNoteOff } from './note-bus.js';
+import { onNoteOn, onNoteOff } from './note-bus.js';
 
 const WHITE_WIDTH = 34;
 const BLACK_WIDTH = 22;
@@ -20,7 +25,6 @@ export class VirtualKeyboard {
     this.startMidi = startMidi;
     this.endMidi = endMidi;
     this.keyEls = new Map();
-    this.pointerToMidi = new Map();
     this._flashTimers = new Map();
     this._build();
     this._unsubOn = onNoteOn(({ number, source }) => this._setHeld(number, true, source));
@@ -54,7 +58,6 @@ export class VirtualKeyboard {
         label.textContent = `C${Math.floor(m / 12) - 1}`;
         el.appendChild(label);
       }
-      this._wireKey(el, m);
       this.container.appendChild(el);
       this.keyEls.set(m, el);
     }
@@ -68,34 +71,9 @@ export class VirtualKeyboard {
       el.style.left = `${(leftWhiteIdx + 1) * WHITE_WIDTH - BLACK_WIDTH / 2}px`;
       el.style.width = `${BLACK_WIDTH}px`;
       el.dataset.midi = String(m);
-      this._wireKey(el, m);
       this.container.appendChild(el);
       this.keyEls.set(m, el);
     }
-  }
-
-  _wireKey(el, midi) {
-    const press = (e) => {
-      e.preventDefault();
-      if (el.setPointerCapture) {
-        try {
-          el.setPointerCapture(e.pointerId);
-        } catch {
-          /* ignore */
-        }
-      }
-      this.pointerToMidi.set(e.pointerId, midi);
-      emitNoteOn(midi, 100, 'keyboard');
-    };
-    const release = (e) => {
-      const heldMidi = this.pointerToMidi.get(e.pointerId);
-      if (heldMidi == null) return;
-      this.pointerToMidi.delete(e.pointerId);
-      emitNoteOff(heldMidi, 'keyboard');
-    };
-    el.addEventListener('pointerdown', press);
-    el.addEventListener('pointerup', release);
-    el.addEventListener('pointercancel', release);
   }
 
   _setHeld(midi, held) {
