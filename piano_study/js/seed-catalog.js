@@ -1,7 +1,16 @@
-// Built-in practice library. Hand-authored, public-domain melodies so the
-// app has something to teach out of the box with zero network access.
+// Built-in practice library. Hand-authored, public-domain/original melodies
+// so the app has something to teach out of the box with zero network access.
 //
-// This doubles as the "sheet music provider" extension point: `SONGS`
+// Chapter 1, "Starter Studies", mirrors the topic order of PianoNanny.com's
+// well-known free 8-lesson "Starter Studies" course (keyboard orientation →
+// black keys/sharps → note reading → time signature → tempo → sight-reading
+// → finger exercises → putting it together) — but every exercise here is an
+// original transcription, not a copy of theirs: their site returned 403 to
+// automated fetches, so nothing of theirs was actually available to copy,
+// and short pedagogical exercises like these aren't really "their" content
+// to begin with. Same idea, our own notes.
+//
+// This also doubles as the "sheet music provider" extension point: `SONGS`
 // below is just a list of Song records with a `musicXml` string attached.
 // A real open-source sheet music provider (e.g. fetching public-domain
 // MusicXML/MXL files from a library such as MuseScore's open scores or
@@ -12,13 +21,59 @@ import { buildMusicXml } from './musicxml-builder.js';
 import { makeChapter, makeLesson, makeSong } from './models.js';
 import { db } from './db.js';
 
-const cMajorScale = buildMusicXml(
-  { title: 'C Major Scale', composer: 'Traditional exercise', fifths: 0, beats: 4, beatType: 4 },
+const CATALOG_VERSION = 2;
+
+// ---------- Chapter 1: Starter Studies ----------
+
+const findingC = buildMusicXml(
+  { title: 'Finding C', composer: 'Starter Studies exercise', fifths: 0, beats: 4, beatType: 4 },
+  [[['C2', 16]], [['C3', 16]], [['C4', 16]], [['C5', 16]]]
+);
+
+const blackKeysIntro = buildMusicXml(
+  { title: 'Sharps: The Black Keys', composer: 'Starter Studies exercise', fifths: 0, beats: 4, beatType: 4 },
+  [
+    [['C4', 4], ['C#4', 4], ['D4', 4], ['D#4', 4]],
+    [['E4', 4], ['D#4', 4], ['D4', 4], ['C#4', 4]],
+    [['C4', 16]],
+  ]
+);
+
+const noteReadingCdefg = buildMusicXml(
+  { title: 'Reading C-D-E-F-G', composer: 'Starter Studies exercise', fifths: 0, beats: 4, beatType: 4 },
   [
     [['C4', 4], ['D4', 4], ['E4', 4], ['F4', 4]],
-    [['G4', 4], ['A4', 4], ['B4', 4], ['C5', 4]],
-    [['C5', 4], ['B4', 4], ['A4', 4], ['G4', 4]],
-    [['F4', 4], ['E4', 4], ['D4', 4], ['C4', 4]],
+    [['G4', 16]],
+  ]
+);
+
+const timeSignatureRhythm = buildMusicXml(
+  { title: 'Whole, Half & Quarter Notes', composer: 'Starter Studies exercise', fifths: 0, beats: 4, beatType: 4 },
+  [
+    [['C4', 16]],
+    [['C4', 8], ['C4', 8]],
+    [['C4', 4], ['C4', 4], ['C4', 4], ['C4', 4]],
+    [['C4', 4], ['C4', 4], ['C4', 8]],
+  ]
+);
+
+const tempoPattern = buildMusicXml(
+  { title: 'Steady Tempo Walk', composer: 'Starter Studies exercise', fifths: 0, beats: 4, beatType: 4 },
+  [
+    [['C4', 4], ['D4', 4], ['E4', 4], ['F4', 4]],
+    [['G4', 4], ['F4', 4], ['E4', 4], ['D4', 4]],
+    [['C4', 16]],
+  ]
+);
+
+const hotCrossBuns = buildMusicXml(
+  { title: 'Hot Cross Buns', composer: 'Traditional', fifths: 0, beats: 4, beatType: 4 },
+  [
+    [['E4', 4], ['D4', 4], ['C4', 8]],
+    [['E4', 4], ['D4', 4], ['C4', 8]],
+    [['C4', 4], ['C4', 4], ['C4', 4], ['C4', 4]],
+    [['D4', 4], ['D4', 4], ['D4', 4], ['D4', 4]],
+    [['E4', 4], ['D4', 4], ['C4', 8]],
   ]
 );
 
@@ -41,6 +96,8 @@ const twinkleTwinkle = buildMusicXml(
     [['D4', 4], ['D4', 4], ['C4', 8]],
   ]
 );
+
+// ---------- Chapter 2: First Melodies ----------
 
 const maryHadALittleLamb = buildMusicXml(
   { title: 'Mary Had a Little Lamb', composer: 'Traditional', fifths: 0, beats: 4, beatType: 4 },
@@ -71,17 +128,48 @@ const odeToJoy = buildMusicXml(
 );
 
 const SONGS = [
-  { key: 'cMajorScale', song: makeSong({ title: 'C Major Scale', composer: 'Traditional exercise', musicXml: cMajorScale, defaultTempo: 66, difficulty: 'beginner', repertoire: false }) },
+  { key: 'findingC', song: makeSong({ title: 'Finding C', composer: 'Starter Studies exercise', musicXml: findingC, defaultTempo: 60, difficulty: 'beginner', repertoire: false }) },
+  { key: 'blackKeysIntro', song: makeSong({ title: 'Sharps: The Black Keys', composer: 'Starter Studies exercise', musicXml: blackKeysIntro, defaultTempo: 60, difficulty: 'beginner', repertoire: false }) },
+  { key: 'noteReadingCdefg', song: makeSong({ title: 'Reading C-D-E-F-G', composer: 'Starter Studies exercise', musicXml: noteReadingCdefg, defaultTempo: 66, difficulty: 'beginner', repertoire: false }) },
+  { key: 'timeSignatureRhythm', song: makeSong({ title: 'Whole, Half & Quarter Notes', composer: 'Starter Studies exercise', musicXml: timeSignatureRhythm, defaultTempo: 66, difficulty: 'beginner', repertoire: false }) },
+  { key: 'tempoPattern', song: makeSong({ title: 'Steady Tempo Walk', composer: 'Starter Studies exercise', musicXml: tempoPattern, defaultTempo: 96, difficulty: 'beginner', repertoire: false }) },
+  { key: 'hotCrossBuns', song: makeSong({ title: 'Hot Cross Buns', composer: 'Traditional', musicXml: hotCrossBuns, defaultTempo: 100, difficulty: 'beginner', repertoire: true }) },
   { key: 'fiveFingerPattern', song: makeSong({ title: 'Five-Finger Pattern', composer: 'Traditional exercise', musicXml: fiveFingerPattern, defaultTempo: 66, difficulty: 'beginner', repertoire: false }) },
   { key: 'twinkleTwinkle', song: makeSong({ title: 'Twinkle Twinkle Little Star', composer: 'Traditional', musicXml: twinkleTwinkle, defaultTempo: 90, difficulty: 'beginner', repertoire: true }) },
   { key: 'maryHadALittleLamb', song: makeSong({ title: 'Mary Had a Little Lamb', composer: 'Traditional', musicXml: maryHadALittleLamb, defaultTempo: 96, difficulty: 'beginner', repertoire: true }) },
   { key: 'odeToJoy', song: makeSong({ title: 'Ode to Joy (theme)', composer: 'Beethoven', musicXml: odeToJoy, defaultTempo: 100, difficulty: 'intermediate', repertoire: true }) },
 ];
 
-/** Populates chapters/lessons/songs on first run only; a `settings` flag marks it done so re-visits don't duplicate rows or clobber user edits. */
+const STARTER_STUDIES_LESSONS = [
+  { key: 'findingC', title: 'First Look at the Keyboard', description: 'Every C sits just left of a group of two black keys. Find and play C in four different octaves.', targetTempo: 60, requiredAccuracy: 0.7 },
+  { key: 'blackKeysIntro', title: 'Sharps: The Black Keys', description: 'A sharp (♯) raises a note by one black key. Walk up and back down by half steps from C.', targetTempo: 60, requiredAccuracy: 0.7 },
+  { key: 'noteReadingCdefg', title: 'Reading the Notes You Play', description: 'Match five notes on the staff to five keys: C, D, E, F, G.', targetTempo: 66, requiredAccuracy: 0.75 },
+  { key: 'timeSignatureRhythm', title: 'Fractions & Time Signature', description: 'One pitch, four rhythms: a whole note, two halves, four quarters, and a quarter-quarter-half — feel how they all fill the same measure.', targetTempo: 66, requiredAccuracy: 0.75 },
+  { key: 'tempoPattern', title: 'Learning About Tempo', description: 'Turn on the metronome and keep this up-and-down phrase locked to a steady beat.', targetTempo: 96, requiredAccuracy: 0.75 },
+  { key: 'hotCrossBuns', title: 'Beginning to Sight-Read', description: 'A complete, classic 3-note tune — read it through top to bottom without stopping.', targetTempo: 100, requiredAccuracy: 0.8 },
+  { key: 'fiveFingerPattern', title: 'Finger Exercising', description: 'One finger per note, C through G and back — the classic five-finger warm-up.', targetTempo: 66, requiredAccuracy: 0.8 },
+  { key: 'twinkleTwinkle', title: 'Put It All Together', description: 'Keys, rhythm, tempo, and reading, all at once, in a full song.', targetTempo: 90, requiredAccuracy: 0.8 },
+];
+
+const FIRST_MELODIES_LESSONS = [
+  { key: 'maryHadALittleLamb', title: 'Mary Had a Little Lamb', targetTempo: 84, requiredAccuracy: 0.8 },
+  { key: 'odeToJoy', title: 'Ode to Joy', targetTempo: 90, requiredAccuracy: 0.85 },
+];
+
+/** Seeds (or re-seeds, on a version bump) chapters/lessons/built-in songs. User data — profiles, attempts, recordings, imported songs — is never touched. */
 export async function seedCatalogIfNeeded() {
   const marker = await db.settings.get('catalog-seed');
-  if (marker && marker.seeded) return;
+  if (marker && marker.version === CATALOG_VERSION) return;
+
+  if (marker) {
+    // Upgrading from an older catalog version: drop the old built-in
+    // chapters/lessons/songs before reseeding. User-created data
+    // (profiles, attempts, recordings, imported songs) is untouched —
+    // only `source: 'builtin'` songs and all chapters/lessons go.
+    for (const chapter of await db.chapters.all()) await db.chapters.remove(chapter.id);
+    for (const lesson of await db.lessons.all()) await db.lessons.remove(lesson.id);
+    for (const song of await db.songs.find((s) => s.source === 'builtin')) await db.songs.remove(song.id);
+  }
 
   const songByKey = {};
   for (const { key, song } of SONGS) {
@@ -89,32 +177,47 @@ export async function seedCatalogIfNeeded() {
   }
 
   const chapter1 = await db.chapters.save(
-    makeChapter({ order: 1, title: 'Foundations', description: 'Find your way around the keyboard and play your first phrases.' })
+    makeChapter({ order: 1, title: 'Starter Studies', description: 'Keyboard orientation, black keys, note reading, rhythm, and tempo — the fundamentals, in order.' })
   );
   const chapter2 = await db.chapters.save(
     makeChapter({ order: 2, title: 'First Melodies', description: 'Full nursery-rhyme melodies to build reading and timing.' })
   );
 
-  const lesson1 = await db.lessons.save(
-    makeLesson({ chapterId: chapter1.id, order: 1, title: 'C Major Scale', songId: songByKey.cMajorScale.id, targetTempo: 66, requiredAccuracy: 0.75 })
-  );
-  const lesson2 = await db.lessons.save(
-    makeLesson({ chapterId: chapter1.id, order: 2, title: 'Five-Finger Pattern', songId: songByKey.fiveFingerPattern.id, targetTempo: 66, requiredAccuracy: 0.75 })
-  );
-  const lesson3 = await db.lessons.save(
-    makeLesson({ chapterId: chapter1.id, order: 3, title: 'Twinkle Twinkle Little Star', songId: songByKey.twinkleTwinkle.id, targetTempo: 80, requiredAccuracy: 0.8 })
-  );
-  const lesson4 = await db.lessons.save(
-    makeLesson({ chapterId: chapter2.id, order: 1, title: 'Mary Had a Little Lamb', songId: songByKey.maryHadALittleLamb.id, targetTempo: 84, requiredAccuracy: 0.8 })
-  );
-  const lesson5 = await db.lessons.save(
-    makeLesson({ chapterId: chapter2.id, order: 2, title: 'Ode to Joy', songId: songByKey.odeToJoy.id, targetTempo: 90, requiredAccuracy: 0.85 })
-  );
+  const chapter1LessonIds = [];
+  for (const [i, l] of STARTER_STUDIES_LESSONS.entries()) {
+    const lesson = await db.lessons.save(
+      makeLesson({
+        chapterId: chapter1.id,
+        order: i + 1,
+        title: l.title,
+        description: l.description,
+        songId: songByKey[l.key].id,
+        targetTempo: l.targetTempo,
+        requiredAccuracy: l.requiredAccuracy,
+      })
+    );
+    chapter1LessonIds.push(lesson.id);
+  }
 
-  chapter1.lessonIds = [lesson1.id, lesson2.id, lesson3.id];
-  chapter2.lessonIds = [lesson4.id, lesson5.id];
+  const chapter2LessonIds = [];
+  for (const [i, l] of FIRST_MELODIES_LESSONS.entries()) {
+    const lesson = await db.lessons.save(
+      makeLesson({
+        chapterId: chapter2.id,
+        order: i + 1,
+        title: l.title,
+        songId: songByKey[l.key].id,
+        targetTempo: l.targetTempo,
+        requiredAccuracy: l.requiredAccuracy,
+      })
+    );
+    chapter2LessonIds.push(lesson.id);
+  }
+
+  chapter1.lessonIds = chapter1LessonIds;
+  chapter2.lessonIds = chapter2LessonIds;
   await db.chapters.save(chapter1);
   await db.chapters.save(chapter2);
 
-  await db.settings.save({ id: 'catalog-seed', seeded: true });
+  await db.settings.save({ id: 'catalog-seed', version: CATALOG_VERSION, seeded: true });
 }

@@ -46,6 +46,7 @@ export async function renderPlayer(root, params) {
           ${escapeHtml(composer)}
           ${lesson ? ` &middot; Target: ${lesson.targetTempo} BPM, ${formatPercent(lesson.requiredAccuracy)} accuracy` : ''}
         </p>
+        ${lesson?.description ? `<p class="muted" style="margin:6px 0 0">${escapeHtml(lesson.description)}</p>` : ''}
       </div>
       <button class="btn secondary small" id="btn-back" type="button">← Back</button>
     </div>
@@ -60,7 +61,10 @@ export async function renderPlayer(root, params) {
           <button data-mode="wait" class="active" type="button">Wait for note</button>
           <button data-mode="performance" type="button">Performance</button>
         </div>
-        <button class="btn success" id="btn-start" type="button">▶ Start</button>
+        <div class="row" style="gap:8px">
+          <button class="btn secondary" id="btn-preview" type="button">▶ Preview</button>
+          <button class="btn success" id="btn-start" type="button">▶ Start</button>
+        </div>
       </div>
       <div class="row" style="gap:28px">
         <div class="field">
@@ -110,7 +114,9 @@ export async function renderPlayer(root, params) {
 
   root.querySelector('#btn-back').addEventListener('click', () => navigate(backTarget));
 
-  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 48, endMidi: 84 });
+  // C2–C6: wide enough to cover every built-in exercise, including the
+  // "Finding C" Starter Study which reaches down to C2.
+  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 36, endMidi: 84 });
 
   let cursor;
   let sheetRenderer = null;
@@ -223,14 +229,48 @@ export async function renderPlayer(root, params) {
       keyboard.clearExpected();
       starsEl.textContent = '⭐'.repeat(attempt.stars) || 'Keep going';
       startBtn.textContent = '▶ Start';
+      previewBtn.disabled = false;
       window.dispatchEvent(new CustomEvent('kira:profile-updated'));
       await refreshHints();
     });
     p.addEventListener('stopped', () => {
       keyboard.clearExpected();
       startBtn.textContent = '▶ Start';
+      previewBtn.disabled = false;
     });
   }
+
+  const previewBtn = root.querySelector('#btn-preview');
+  let previewPlayer = null;
+
+  previewBtn.addEventListener('click', () => {
+    ensureAudioContext();
+    if (previewPlayer && previewPlayer.running) {
+      previewPlayer.stop('manual');
+      return;
+    }
+    if (player && player.running) return;
+    previewPlayer = new PracticePlayer({
+      cursor,
+      profileId: profile.id,
+      songId: song ? song.id : null,
+      lessonId: lesson ? lesson.id : null,
+      mode: PracticeMode.DEMO,
+      tempoBpm: bpmValue(),
+      loopRegion: currentLoopRegion(),
+    });
+    previewPlayer.addEventListener('step', (e) => keyboard.highlightExpected(e.detail.expected));
+    const resetPreviewUi = () => {
+      keyboard.clearExpected();
+      previewBtn.textContent = '▶ Preview';
+      startBtn.disabled = false;
+    };
+    previewPlayer.addEventListener('finished', resetPreviewUi);
+    previewPlayer.addEventListener('stopped', resetPreviewUi);
+    previewPlayer.start();
+    previewBtn.textContent = '⏹ Stop';
+    startBtn.disabled = true;
+  });
 
   startBtn.addEventListener('click', () => {
     ensureAudioContext();
@@ -238,6 +278,8 @@ export async function renderPlayer(root, params) {
       player.stop('manual');
       return;
     }
+    if (previewPlayer && previewPlayer.running) return;
+    previewBtn.disabled = true;
     resetLiveMetrics();
     player = new PracticePlayer({
       cursor,
@@ -292,6 +334,7 @@ export async function renderPlayer(root, params) {
 
   return () => {
     player?.stop('navigated-away');
+    previewPlayer?.stop('navigated-away');
     metronome.stop();
     keyboard.destroy();
     sheetRenderer?.destroy();

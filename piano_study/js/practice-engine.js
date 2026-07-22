@@ -6,7 +6,7 @@
 // scrollCursorIntoView() — so this file doesn't need to know which one
 // it's got.
 //
-// Two modes:
+// Three modes:
 //  - "wait": the cursor never advances until the correct note (or, for a
 //    chord, all of them) is played. Wrong notes are logged as mistakes
 //    but do NOT advance the piece — this is the literal "wait for the
@@ -14,17 +14,22 @@
 //  - "performance": time/tempo driven — the cursor advances on a
 //    metronome-scaled clock regardless of what's played, and scores how
 //    close each press landed to the beat. Good for playing at tempo.
-// Both respect an optional loop region (1-based, inclusive measure
+//  - "demo": a non-interactive "preview" — auto-emits the expected notes
+//    on the shared note bus itself (so the synth sounds and the virtual
+//    keyboard lights up) while the cursor advances on a tempo clock. No
+//    input is scored and no Attempt is recorded; it's just a clickable
+//    way to hear/see what a piece of music sounds like before practicing it.
+// All three respect an optional loop region (1-based, inclusive measure
 // range) for isolating a hard passage.
 
 import { db } from './db.js';
-import { onNoteOn } from './note-bus.js';
+import { onNoteOn, emitNoteOn, emitNoteOff } from './note-bus.js';
 import { logEvent } from './events.js';
 import { makeAttempt } from './models.js';
 import { recordMistake } from './mistakes.js';
 import { computeStars, applyAttemptSideEffects } from './stats.js';
 
-export const PracticeMode = { WAIT: 'wait', PERFORMANCE: 'performance' };
+export const PracticeMode = { WAIT: 'wait', PERFORMANCE: 'performance', DEMO: 'demo' };
 
 export class PracticePlayer extends EventTarget {
   constructor({ cursor, profileId, songId, lessonId = null, mode = PracticeMode.WAIT, tempoBpm = 80, loopRegion = null }) {
@@ -42,6 +47,7 @@ export class PracticePlayer extends EventTarget {
     this._hitTimes = new Map();
     this._currentExpected = [];
     this._perfTimer = null;
+    this._demoOffTimer = null;
     this._unsubOn = null;
   }
 
@@ -70,6 +76,7 @@ export class PracticePlayer extends EventTarget {
     this.running = false;
     this._unsubOn?.();
     clearTimeout(this._perfTimer);
+    clearTimeout(this._demoOffTimer);
     logEvent('practice.stop', { songId: this.songId, reason });
     this.dispatchEvent(new CustomEvent('stopped', { detail: { reason } }));
   }
@@ -109,6 +116,19 @@ export class PracticePlayer extends EventTarget {
       return;
     }
 
+    if (this.mode === PracticeMode.DEMO) {
+      // Play it ourselves: emit the expected notes on the shared bus (the
+      // synth and virtual keyboard react to this exactly like real input),
+      // then advance on the tempo clock regardless of anything a listener
+      // does — this is a preview, not a scored attempt.
+      for (const n of expected) emitNoteOn(n, 100, 'demo');
+      this._demoOffTimer = setTimeout(() => {
+        for (const n of expected) emitNoteOff(n, 'demo');
+      }, scheduledMs * 0.85);
+      this._perfTimer = setTimeout(() => this._advance(), scheduledMs);
+      return;
+    }
+
     if (this.mode === PracticeMode.PERFORMANCE) {
       this._perfTimer = setTimeout(() => this._resolvePerformanceStep(), scheduledMs);
     }
@@ -116,7 +136,7 @@ export class PracticePlayer extends EventTarget {
   }
 
   _handleNoteOn(number) {
-    if (!this.running || this._currentExpected.length === 0) return;
+    if (!this.running || this.mode === PracticeMode.DEMO || this._currentExpected.length === 0) return;
     const expected = this._currentExpected;
     const isCorrect = expected.includes(number);
     const measureIndex = this.cursor.currentMeasureIndex();
@@ -165,6 +185,7 @@ export class PracticePlayer extends EventTarget {
 
   _advance() {
     clearTimeout(this._perfTimer);
+    clearTimeout(this._demoOffTimer);
     if (!this.running) return;
     this.cursor.next();
     const pastLoopEnd = this.loopRegion && (this.cursor.atEnd() || this.cursor.currentMeasureIndex() > this.loopEndIdx);
@@ -182,6 +203,14 @@ export class PracticePlayer extends EventTarget {
     this.running = false;
     this._unsubOn?.();
     clearTimeout(this._perfTimer);
+    clearTimeout(this._demoOffTimer);
+
+    if (this.mode === PracticeMode.DEMO) {
+      logEvent('practice.demo_complete', { songId: this.songId, lessonId: this.lessonId });
+      this.dispatchEvent(new CustomEvent('finished', { detail: { demo: true } }));
+      return;
+    }
+
     const durationMs = performance.now() - this._startTs;
     const totalNotes = this.noteResults.length || 1;
     const correctCount = this.noteResults.filter((r) => r.correct).length;

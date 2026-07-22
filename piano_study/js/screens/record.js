@@ -35,7 +35,7 @@ export async function renderRecord(root) {
     </div>
   `;
 
-  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 48, endMidi: 84 });
+  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 36, endMidi: 84 });
 
   async function renderList() {
     const recordings = await db.recordings.find((r) => r.profileId === profile.id);

@@ -27,10 +27,11 @@ export async function renderPath(root) {
             const stateClass = isLocked ? 'locked' : starCount > 0 ? '' : 'in-progress';
             return `
           <div class="path-node-wrap ${align}">
-            <button class="path-node ${stateClass}" data-lesson-id="${lesson.id}" ${isLocked ? 'disabled' : ''} type="button">
+            <button class="path-node ${stateClass}" data-lesson-id="${lesson.id}" ${isLocked ? 'disabled' : ''} type="button" title="${escapeHtml(lesson.description || '')}">
               ${isLocked ? '🔒' : starCount > 0 ? '✓' : '▶'}
             </button>
             <div class="path-label">${escapeHtml(lesson.title)}</div>
+            ${lesson.description ? `<div class="muted" style="font-size:11px;max-width:160px;text-align:center">${escapeHtml(lesson.description)}</div>` : ''}
             ${starsHtml(starCount)}
           </div>`;
           })

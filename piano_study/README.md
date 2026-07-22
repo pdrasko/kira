@@ -11,18 +11,27 @@ stats. No build step — open `index.html` (or visit
 - Play the on-screen keyboard with clicks/taps, or plug in a real MIDI
   keyboard/controller (Chrome/Edge on desktop or Android — Web MIDI isn't
   available on iOS) and connect it from **Profile → Connect MIDI device**.
-- **Path** has a 2-chapter, 5-lesson built-in curriculum (a C major scale
-  and five-finger warm-up, then three full melodies). Lessons unlock in
-  order once the previous one earns at least one star.
+- **Path** has a 2-chapter, 10-lesson built-in curriculum. Chapter 1,
+  "Starter Studies," mirrors the topic order of PianoNanny.com's well-known
+  free 8-lesson beginner course — keyboard orientation, black keys/sharps,
+  note reading, time signature, tempo, sight-reading, finger exercises,
+  then a full song that puts it together — with original exercises (see
+  "Digitizing sheet music" below for why). Chapter 2 adds two full
+  melodies. Lessons unlock in order once the previous one earns at least
+  one star.
 - **Repertoire** is the same songs playable freely, no lesson gate.
 - **Record** captures your own playing (notes + timing, not audio) so you
   can practice it back later through the same engine as any other song.
 - **Stats** shows XP/level, streak, a 12-week practice calendar, and an
   accuracy/tempo-consistency trend chart per song.
+- Every lesson has a **▶ Preview** button next to Start that auto-plays the
+  piece — cursor moving, keyboard lighting up, synth sounding — with no
+  input needed and no attempt recorded, so you can hear/see what a piece
+  sounds like before practicing it.
 
 ## How practicing works
 
-Two modes, both aware of an optional bar-range loop for isolating a hard
+Three modes, all aware of an optional bar-range loop for isolating a hard
 passage:
 
 - **Wait for note** — the cursor never advances until you play the
@@ -32,6 +41,11 @@ passage:
 - **Performance** — tempo/metronome-driven; the cursor advances on a
   clock regardless of what you play, scoring how close each note landed to
   the beat. This is what tempo-consistency measures.
+- **Preview/demo** (the ▶ Preview button, not exposed as a mode toggle) —
+  same tempo clock, but it plays itself: notes are emitted on the shared
+  note bus instead of waited for, so the synth and keyboard react exactly
+  as if you'd played them. No scoring, no Attempt recorded — it's a
+  listen-along, not a practice run.
 
 Recurring mistakes (3+ misses at the same note/measure) surface as a hint
 with a one-click "practice this section" button that sets up a loop around
@@ -112,8 +126,8 @@ most of those aren't CORS-enabled for direct browser fetches, and would need
 a server-side proxy this app doesn't have. Two things stand in for that
 today, sharing one seam:
 
-1. **Built-in library** (`seed-catalog.js`) — five public-domain pieces,
-   hand-authored as MusicXML via `musicxml-builder.js`.
+1. **Built-in library** (`seed-catalog.js`) — ten public-domain/original
+   pieces, hand-authored as MusicXML via `musicxml-builder.js`.
 2. **Import** (Profile → "Add sheet music") — drop in any uncompressed
    `.musicxml`/`.xml` file (e.g. exported from an open-source notation tool,
    or downloaded from an open sheet-music library) and it's added to your
@@ -122,6 +136,15 @@ today, sharing one seam:
 Both populate the exact same `Song.musicXml` field. Wiring up a live
 provider later is a matter of adding another function with that same
 shape (fetch → return a MusicXML string) — not a redesign.
+
+The Chapter 1 "Starter Studies" lessons were modeled after PianoNanny.com's
+8-lesson beginner course *topic order*, not its actual images: pianonanny.com
+returns HTTP 403 to automated fetches (confirmed both from this app's build
+environment and via the WebFetch tool), so there was never anything of
+theirs available to "digitize" — the exercises in `seed-catalog.js` are
+original transcriptions of the same pedagogical progression. If you have
+saved copies of the real PianoNanny pages/images, they can be transcribed
+by hand into `musicxml-builder.js`-style note lists and swapped in.
 
 ## Known simplifications (MVP scope)
 
