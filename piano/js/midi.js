@@ -39,6 +39,19 @@ function attachAllInputs() {
     if (attachedInputs.has(input)) return;
     attachedInputs.add(input);
     input.onmidimessage = (event) => handleMessage(input.name || 'Unnamed device', event);
+    // Setting onmidimessage is *supposed* to implicitly open the port, but
+    // that's unreliable on some Android/Chrome + USB-MIDI-adapter
+    // combinations — the port can sit at connection:"closed" or "pending"
+    // forever, showing up in the device list (so it looks "connected")
+    // while never actually delivering a message. Opening explicitly is
+    // harmless when the implicit path already worked, and is the fix when
+    // it didn't.
+    if (typeof input.open === 'function') {
+      input.open().then(
+        () => notifyStatus(),
+        (err) => logEvent('midi.open_failed', { device: input.name, message: String(err && err.message) })
+      );
+    }
   });
   notifyStatus();
 }

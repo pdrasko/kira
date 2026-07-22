@@ -130,6 +130,7 @@ export async function renderPlayer(root, params) {
         Shows every note on/off the app receives, from any source, whether or not you've clicked Start —
         press a key on your MIDI keyboard now and confirm it shows up here.
       </p>
+      <div class="muted" id="midi-device-detail" style="margin-bottom:8px"></div>
       <div class="mistake-log" id="midi-activity-log"><div class="muted">Waiting for input…</div></div>
     </div>
 
@@ -141,8 +142,16 @@ export async function renderPlayer(root, params) {
   root.querySelector('#btn-back').addEventListener('click', () => navigate(backTarget));
 
   const midiBanner = root.querySelector('#midi-banner');
+  const midiDeviceDetail = root.querySelector('#midi-device-detail');
   const unsubMidiStatus = onMidiStatusChange(({ inputs }) => {
     midiBanner.style.display = inputs.length === 0 ? '' : 'none';
+    // `state` is whether the OS/browser sees the device at all; `connection`
+    // is whether the port is actually open and will deliver messages — a
+    // device stuck at connection:"closed" or "pending" here (instead of
+    // "open") explains "shows connected but nothing happens when I press a key".
+    midiDeviceDetail.textContent = inputs.length
+      ? `Device(s): ${inputs.map((i) => `${i.name || 'Unnamed'} (state: ${i.state}, connection: ${i.connection})`).join(', ')}`
+      : 'No MIDI input devices detected.';
   });
   root.querySelector('#btn-connect-midi').addEventListener('click', () => connectMidi());
 
