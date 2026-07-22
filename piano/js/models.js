@@ -20,9 +20,9 @@ export function makeChapter({ order, title, description, lessonIds = [] }) {
   return { order, title, description, lessonIds };
 }
 
-/** @typedef {{id:string, chapterId:string, order:number, title:string, songId:string, targetTempo:number, requiredAccuracy:number}} Lesson */
-export function makeLesson({ chapterId, order, title, songId, targetTempo = 80, requiredAccuracy = 0.8 }) {
-  return { chapterId, order, title, songId, targetTempo, requiredAccuracy };
+/** @typedef {{id:string, chapterId:string, order:number, title:string, description:string, songId:string, targetTempo:number, requiredAccuracy:number}} Lesson */
+export function makeLesson({ chapterId, order, title, description = '', songId, targetTempo = 80, requiredAccuracy = 0.8 }) {
+  return { chapterId, order, title, description, songId, targetTempo, requiredAccuracy };
 }
 
 /**

@@ -7,7 +7,7 @@
 
 > Try the MIDI-to-USB virtual keyboard proof of concept at [https://pdrasko.github.io/kira/midi_keyboard/](https://pdrasko.github.io/kira/midi_keyboard/) (Chrome desktop or Android only — see [`midi_keyboard/README.md`](midi_keyboard/README.md)).
 
-> Practice piano with the study guide at [https://pdrasko.github.io/kira/piano_study/](https://pdrasko.github.io/kira/piano_study/) — see [`piano_study/README.md`](piano_study/README.md).
+> Practice piano with the study guide at [https://pdrasko.github.io/kira/piano/](https://pdrasko.github.io/kira/piano/) — see [`piano/README.md`](piano/README.md).
 
 ## Use as Extension
 

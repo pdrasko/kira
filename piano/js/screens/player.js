@@ -12,6 +12,7 @@ import { ensureAudioContext } from '../synth.js';
 import { noteNumberToName } from '../note-bus.js';
 import { navigate } from '../router.js';
 import { escapeHtml, formatPercent } from '../util.js';
+import { connectMidi, onMidiStatusChange } from '../midi.js';
 
 export async function renderPlayer(root, params) {
   const profile = await getCurrentProfile();
@@ -46,8 +47,16 @@ export async function renderPlayer(root, params) {
           ${escapeHtml(composer)}
           ${lesson ? ` &middot; Target: ${lesson.targetTempo} BPM, ${formatPercent(lesson.requiredAccuracy)} accuracy` : ''}
         </p>
+        ${lesson?.description ? `<p class="muted" style="margin:6px 0 0">${escapeHtml(lesson.description)}</p>` : ''}
       </div>
       <button class="btn secondary small" id="btn-back" type="button">← Back</button>
+    </div>
+
+    <div class="panel" id="midi-banner" style="display:none">
+      <div class="row between">
+        <span>🎹 No MIDI keyboard connected. Practice and recording both require a real USB-MIDI keyboard/controller — the on-screen keyboard below is a display only, not an input.</span>
+        <button class="btn secondary small" id="btn-connect-midi" type="button">Connect MIDI</button>
+      </div>
     </div>
 
     <div class="panel">
@@ -55,35 +64,44 @@ export async function renderPlayer(root, params) {
     </div>
 
     <div class="panel">
-      <div class="row between" style="margin-bottom:14px">
-        <div class="mode-toggle">
-          <button data-mode="wait" class="active" type="button">Wait for note</button>
-          <button data-mode="performance" type="button">Performance</button>
+      <div class="row between">
+        <div class="row" style="gap:8px">
+          <button class="btn secondary" id="btn-preview" type="button">▶ Preview</button>
+          <button class="btn success" id="btn-start" type="button">▶ Start</button>
         </div>
-        <button class="btn success" id="btn-start" type="button">▶ Start</button>
-      </div>
-      <div class="row" style="gap:28px">
-        <div class="field">
-          <label>Tempo (BPM)</label>
-          <div class="row">
-            <input type="number" id="input-bpm" min="20" max="240" value="${defaultTempo}" style="width:68px">
-            <input type="range" id="range-bpm" min="20" max="240" value="${defaultTempo}">
-          </div>
-        </div>
-        <div class="field">
-          <label>Loop ${stepLabel.toLowerCase()}s (isolate a passage)</label>
-          <div class="row">
-            <input type="checkbox" id="chk-loop">
-            <input type="number" id="loop-start" min="1" value="1" style="width:55px">
-            <span class="muted">to</span>
-            <input type="number" id="loop-end" min="1" value="1" style="width:55px">
-          </div>
-        </div>
-        <div class="field">
-          <label>Metronome</label>
-          <div class="row">
-            <input type="checkbox" id="chk-metronome">
-            <span class="muted" id="metronome-status">off</span>
+        <div class="settings-menu-wrap">
+          <button class="btn secondary small" id="btn-settings" type="button" aria-label="Practice settings" title="Mode, tempo, loop, metronome">⋮</button>
+          <div class="settings-menu" id="settings-menu">
+            <div class="field">
+              <label>Mode</label>
+              <div class="mode-toggle">
+                <button data-mode="wait" class="active" type="button">Wait for note</button>
+                <button data-mode="performance" type="button">Performance</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Tempo (BPM)</label>
+              <div class="row">
+                <input type="number" id="input-bpm" min="20" max="240" value="${defaultTempo}" style="width:68px">
+                <input type="range" id="range-bpm" min="20" max="240" value="${defaultTempo}">
+              </div>
+            </div>
+            <div class="field">
+              <label>Loop ${stepLabel.toLowerCase()}s (isolate a passage)</label>
+              <div class="row">
+                <input type="checkbox" id="chk-loop">
+                <input type="number" id="loop-start" min="1" value="1" style="width:55px">
+                <span class="muted">to</span>
+                <input type="number" id="loop-end" min="1" value="1" style="width:55px">
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>Metronome</label>
+              <div class="row">
+                <input type="checkbox" id="chk-metronome">
+                <span class="muted" id="metronome-status">off</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -110,7 +128,26 @@ export async function renderPlayer(root, params) {
 
   root.querySelector('#btn-back').addEventListener('click', () => navigate(backTarget));
 
-  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 48, endMidi: 84 });
+  const midiBanner = root.querySelector('#midi-banner');
+  const unsubMidiStatus = onMidiStatusChange(({ inputs }) => {
+    midiBanner.style.display = inputs.length === 0 ? '' : 'none';
+  });
+  root.querySelector('#btn-connect-midi').addEventListener('click', () => connectMidi());
+
+  const settingsBtn = root.querySelector('#btn-settings');
+  const settingsMenu = root.querySelector('#settings-menu');
+  settingsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    settingsMenu.classList.toggle('open');
+  });
+  const closeSettingsOnOutsideClick = (e) => {
+    if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) settingsMenu.classList.remove('open');
+  };
+  document.addEventListener('click', closeSettingsOnOutsideClick);
+
+  // C2–C6: wide enough to cover every built-in exercise, including the
+  // "Finding C" Starter Study which reaches down to C2.
+  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 36, endMidi: 84 });
 
   let cursor;
   let sheetRenderer = null;
@@ -223,14 +260,48 @@ export async function renderPlayer(root, params) {
       keyboard.clearExpected();
       starsEl.textContent = '⭐'.repeat(attempt.stars) || 'Keep going';
       startBtn.textContent = '▶ Start';
+      previewBtn.disabled = false;
       window.dispatchEvent(new CustomEvent('kira:profile-updated'));
       await refreshHints();
     });
     p.addEventListener('stopped', () => {
       keyboard.clearExpected();
       startBtn.textContent = '▶ Start';
+      previewBtn.disabled = false;
     });
   }
+
+  const previewBtn = root.querySelector('#btn-preview');
+  let previewPlayer = null;
+
+  previewBtn.addEventListener('click', () => {
+    ensureAudioContext();
+    if (previewPlayer && previewPlayer.running) {
+      previewPlayer.stop('manual');
+      return;
+    }
+    if (player && player.running) return;
+    previewPlayer = new PracticePlayer({
+      cursor,
+      profileId: profile.id,
+      songId: song ? song.id : null,
+      lessonId: lesson ? lesson.id : null,
+      mode: PracticeMode.DEMO,
+      tempoBpm: bpmValue(),
+      loopRegion: currentLoopRegion(),
+    });
+    previewPlayer.addEventListener('step', (e) => keyboard.highlightExpected(e.detail.expected));
+    const resetPreviewUi = () => {
+      keyboard.clearExpected();
+      previewBtn.textContent = '▶ Preview';
+      startBtn.disabled = false;
+    };
+    previewPlayer.addEventListener('finished', resetPreviewUi);
+    previewPlayer.addEventListener('stopped', resetPreviewUi);
+    previewPlayer.start();
+    previewBtn.textContent = '⏹ Stop';
+    startBtn.disabled = true;
+  });
 
   startBtn.addEventListener('click', () => {
     ensureAudioContext();
@@ -238,6 +309,8 @@ export async function renderPlayer(root, params) {
       player.stop('manual');
       return;
     }
+    if (previewPlayer && previewPlayer.running) return;
+    previewBtn.disabled = true;
     resetLiveMetrics();
     player = new PracticePlayer({
       cursor,
@@ -292,8 +365,11 @@ export async function renderPlayer(root, params) {
 
   return () => {
     player?.stop('navigated-away');
+    previewPlayer?.stop('navigated-away');
     metronome.stop();
     keyboard.destroy();
     sheetRenderer?.destroy();
+    unsubMidiStatus();
+    document.removeEventListener('click', closeSettingsOnOutsideClick);
   };
 }

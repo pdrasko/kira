@@ -5,6 +5,7 @@ import { db } from '../db.js';
 import { ensureAudioContext } from '../synth.js';
 import { navigate } from '../router.js';
 import { escapeHtml } from '../util.js';
+import { connectMidi, onMidiStatusChange } from '../midi.js';
 
 export async function renderRecord(root) {
   const profile = await getCurrentProfile();
@@ -12,6 +13,12 @@ export async function renderRecord(root) {
   let cancelPlayback = null;
 
   root.innerHTML = `
+    <div class="panel" id="midi-banner" style="display:none">
+      <div class="row between">
+        <span>🎹 No MIDI keyboard connected. Recording captures real USB-MIDI input only — the on-screen keyboard below is a display only, not an input.</span>
+        <button class="btn secondary small" id="btn-connect-midi" type="button">Connect MIDI</button>
+      </div>
+    </div>
     <div class="panel">
       <h2 style="margin-top:0">Record a Song</h2>
       <p class="muted">Captures MIDI notes and timing only — no audio — so you can come back and practice it later just like any other song in your library.</p>
@@ -35,7 +42,13 @@ export async function renderRecord(root) {
     </div>
   `;
 
-  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 48, endMidi: 84 });
+  const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 36, endMidi: 84 });
+
+  const midiBanner = root.querySelector('#midi-banner');
+  const unsubMidiStatus = onMidiStatusChange(({ inputs }) => {
+    midiBanner.style.display = inputs.length === 0 ? '' : 'none';
+  });
+  root.querySelector('#btn-connect-midi').addEventListener('click', () => connectMidi());
 
   async function renderList() {
     const recordings = await db.recordings.find((r) => r.profileId === profile.id);
@@ -125,5 +138,6 @@ export async function renderRecord(root) {
     if (recorder.recording) recorder.stop();
     cancelPlayback?.();
     keyboard.destroy();
+    unsubMidiStatus();
   };
 }

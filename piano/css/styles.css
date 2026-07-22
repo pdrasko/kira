@@ -89,6 +89,20 @@ nav.app-nav button:hover { color: var(--text); }
   white-space: nowrap;
 }
 
+.midi-chip {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.midi-chip.connected { color: var(--accent); border-color: var(--accent); }
+.midi-chip.disconnected { color: var(--warn); border-color: var(--warn); }
+.midi-chip.unsupported { color: var(--danger); border-color: var(--danger); }
+
 .goal-ring {
   width: 30px;
   height: 30px;
@@ -246,6 +260,24 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
   display: block;
   margin-bottom: 14px;
 }
+
+.settings-menu-wrap { position: relative; }
+
+.settings-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 300px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+}
+.settings-menu.open { display: block; }
+.settings-menu .field:last-child { margin-bottom: 0; }
 
 .mode-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .mode-toggle button {
