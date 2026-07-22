@@ -4,7 +4,7 @@ A Duolingo-style piano practice app: a lesson path with chapters and stars, a
 free-play repertoire, MIDI recording, live sheet-music-synced practice with a
 virtual keyboard, a metronome, mistake tracking with hints, and progress
 stats. No build step — open `index.html` (or visit
-**https://pdrasko.github.io/kira/piano_study/**) and it runs.
+**https://pdrasko.github.io/kira/piano/**) and it runs.
 
 ## Try it
 
