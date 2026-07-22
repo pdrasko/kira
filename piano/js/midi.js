@@ -9,6 +9,7 @@ import { logEvent } from './events.js';
 let midiAccess = null;
 const attachedInputs = new Set();
 const listeners = new Set();
+const rawListeners = new Set();
 
 function notifyStatus() {
   const inputs = midiAccess ? Array.from(midiAccess.inputs.values()) : [];
@@ -21,8 +22,25 @@ export function onMidiStatusChange(fn) {
   return () => listeners.delete(fn);
 }
 
+/**
+ * Every raw message a MIDI input delivers, completely unfiltered — including
+ * ones handleMessage() doesn't recognize as note on/off (clock, active
+ * sensing, control change, sysex, ...). This exists purely for diagnosing
+ * "the device shows connected but nothing happens": if this never fires
+ * either, no bytes are reaching the browser at all (almost always a cabling
+ * issue — e.g. a 5-pin DIN cable into a USB-MIDI adapter's OUT jack instead
+ * of IN, or the instrument's MIDI OUT not actually enabled) rather than
+ * anything this app's code could fix. If it fires with bytes that aren't a
+ * recognized note on/off, that points to a parsing gap instead.
+ */
+export function onRawMidiMessage(fn) {
+  rawListeners.add(fn);
+  return () => rawListeners.delete(fn);
+}
+
 function handleMessage(deviceName, event) {
   const data = event.data;
+  for (const fn of rawListeners) fn({ deviceName, data });
   const command = data[0] & 0xf0;
   const number = data[1];
   const velocity = data.length > 2 ? data[2] : 0;

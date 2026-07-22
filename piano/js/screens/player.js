@@ -12,7 +12,7 @@ import { ensureAudioContext } from '../synth.js';
 import { noteNumberToName, onNoteOn, onNoteOff } from '../note-bus.js';
 import { navigate } from '../router.js';
 import { escapeHtml, formatPercent } from '../util.js';
-import { connectMidi, onMidiStatusChange } from '../midi.js';
+import { connectMidi, onMidiStatusChange, onRawMidiMessage } from '../midi.js';
 
 export async function renderPlayer(root, params) {
   const profile = await getCurrentProfile();
@@ -127,8 +127,12 @@ export async function renderPlayer(root, params) {
         <button class="btn secondary small" id="btn-clear-midi-log" type="button">Clear</button>
       </div>
       <p class="muted" style="margin:6px 0">
-        Shows every note on/off the app receives, from any source, whether or not you've clicked Start —
-        press a key on your MIDI keyboard now and confirm it shows up here.
+        Shows every message the app receives — recognized note on/off, and unrecognized raw bytes too —
+        whether or not you've clicked Start. Press a key now and confirm it shows up here. If a device
+        says "connected" but absolutely nothing appears here (not even a RAW line), no bytes are reaching
+        the browser at all — on a USB-to-5-pin-DIN adapter that's almost always a cabling issue (the DIN
+        cable into the adapter's OUT jack instead of IN, or the instrument's MIDI OUT not enabled), not
+        something in this app.
       </p>
       <div class="muted" id="midi-device-detail" style="margin-bottom:8px"></div>
       <div class="mistake-log" id="midi-activity-log"><div class="muted">Waiting for input…</div></div>
@@ -176,6 +180,15 @@ export async function renderPlayer(root, params) {
   });
   const unsubActivityOff = onNoteOff(({ number, source }) => {
     logMidiActivity(`OFF ${noteNumberToName(number)} (midi #${number}) — source: ${source}`);
+  });
+  // Every raw byte a MIDI input delivers, recognized or not — if this never
+  // shows anything, no bytes are reaching the browser at all (almost always
+  // a cabling issue on a DIN-to-USB adapter, not something in this app).
+  const unsubRaw = onRawMidiMessage(({ deviceName, data }) => {
+    const hex = Array.from(data)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join(' ');
+    logMidiActivity(`RAW [${hex}] from ${deviceName}`);
   });
   root.querySelector('#btn-clear-midi-log').addEventListener('click', () => {
     midiActivityLog.innerHTML = '<div class="muted">Waiting for input…</div>';
@@ -420,6 +433,7 @@ export async function renderPlayer(root, params) {
     unsubMidiStatus();
     unsubActivityOn();
     unsubActivityOff();
+    unsubRaw();
     document.removeEventListener('click', closeSettingsOnOutsideClick);
   };
 }
