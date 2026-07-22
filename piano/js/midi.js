@@ -56,41 +56,55 @@ function attachAllInputs() {
   midiAccess.inputs.forEach((input) => {
     if (attachedInputs.has(input)) return;
     attachedInputs.add(input);
+    // Deliberately matches ../midi_keyboard/index.html exactly here: just
+    // assign onmidimessage and let the browser handle opening the port
+    // implicitly. An earlier version of this file also called input.open()
+    // explicitly, on the theory that implicit opening is occasionally
+    // unreliable — but that's a real behavioral difference from the proven
+    // -working proof of concept, which never does that, so it's removed
+    // rather than layering more speculation on unverified hardware.
     input.onmidimessage = (event) => handleMessage(input.name || 'Unnamed device', event);
-    // Setting onmidimessage is *supposed* to implicitly open the port, but
-    // that's unreliable on some Android/Chrome + USB-MIDI-adapter
-    // combinations — the port can sit at connection:"closed" or "pending"
-    // forever, showing up in the device list (so it looks "connected")
-    // while never actually delivering a message. Opening explicitly is
-    // harmless when the implicit path already worked, and is the fix when
-    // it didn't.
-    if (typeof input.open === 'function') {
-      input.open().then(
-        () => notifyStatus(),
-        (err) => logEvent('midi.open_failed', { device: input.name, message: String(err && err.message) })
-      );
-    }
   });
   notifyStatus();
 }
 
-export async function connectMidi() {
+let connectPromise = null;
+
+/**
+ * Requests MIDI access at most ONCE for the page's lifetime, no matter how
+ * many times this is called. The app has several "Connect MIDI" entry
+ * points (header chip, Profile, and a banner on both Player and Record) all
+ * calling this — unlike the single-button midi_keyboard.html proof of
+ * concept, nothing here previously stopped a second click from calling
+ * navigator.requestMIDIAccess() again mid-session. Each call is allowed to
+ * hand back its own MIDIAccess/MIDIInput object graph; there's no spec
+ * guarantee that a later call's ports are the *same* objects a real device
+ * is actively streaming to, so calling twice can leave you attached to and
+ * reading the state of a port that isn't the one actually receiving data —
+ * looking "connected, open" while silently never delivering a message.
+ */
+export function connectMidi() {
   if (!navigator.requestMIDIAccess) {
-    return { ok: false, reason: 'unsupported' };
+    return Promise.resolve({ ok: false, reason: 'unsupported' });
   }
-  try {
-    midiAccess = await navigator.requestMIDIAccess({ sysex: false });
-    midiAccess.onstatechange = () => {
+  if (connectPromise) return connectPromise;
+  connectPromise = (async () => {
+    try {
+      midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+      midiAccess.onstatechange = () => {
+        attachAllInputs();
+        notifyStatus();
+      };
       attachAllInputs();
-      notifyStatus();
-    };
-    attachAllInputs();
-    logEvent('midi.connected', { deviceCount: Array.from(midiAccess.inputs.values()).length });
-    return { ok: true };
-  } catch (err) {
-    logEvent('midi.connect_failed', { message: String(err && err.message) });
-    return { ok: false, reason: 'denied', error: err };
-  }
+      logEvent('midi.connected', { deviceCount: Array.from(midiAccess.inputs.values()).length });
+      return { ok: true };
+    } catch (err) {
+      connectPromise = null; // allow retrying after a real failure
+      logEvent('midi.connect_failed', { message: String(err && err.message) });
+      return { ok: false, reason: 'denied', error: err };
+    }
+  })();
+  return connectPromise;
 }
 
 export function isMidiSupported() {
