@@ -5,6 +5,8 @@
 
 > Play the interactive story at [https://pdrasko.github.io/kira/kira_story/](https://pdrasko.github.io/kira/kira_story/) — see [`kira_story/README.md`](kira_story/README.md).
 
+> Try the MIDI-to-USB virtual keyboard proof of concept at [https://pdrasko.github.io/kira/midi_keyboard/](https://pdrasko.github.io/kira/midi_keyboard/) (Chrome desktop or Android only — see [`midi_keyboard/README.md`](midi_keyboard/README.md)).
+
 ## Use as Extension
 
 This repository can be added as an **extension** in MakeCode.

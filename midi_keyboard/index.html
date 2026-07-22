@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>MIDI Virtual Keyboard — Proof of Concept</title>
+<script src="https://cdn.jsdelivr.net/npm/qwerty-hancock@1.0.0/dist/index.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #10141a;
+    --panel: #1b212b;
+    --border: #2c3644;
+    --text: #e7ecf3;
+    --muted: #8b97a8;
+    --accent: #22c55e;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 16px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  p.subtitle {
+    color: var(--muted);
+    margin: 0 0 18px;
+    font-size: 13px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  #status-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  #status-dot.ok { background: var(--accent); }
+  #status-dot.error { background: var(--danger); }
+  #status-dot.waiting { background: var(--warn); }
+  #status-text { font-size: 14px; }
+  #connect-btn {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #connect-btn:active { transform: scale(0.98); }
+  #device-list {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  #device-list ul { margin: 6px 0 0; padding-left: 18px; }
+  #unsupported {
+    display: none;
+    background: #3a1d1d;
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  #held-panel {
+    text-align: center;
+  }
+  #held-label {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  #held-notes {
+    font-size: 30px;
+    font-weight: 700;
+    min-height: 40px;
+    letter-spacing: 2px;
+    word-break: break-word;
+  }
+  #held-notes.empty {
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 400;
+  }
+  #keyboard-scroll {
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #keyboard {
+    display: inline-block;
+  }
+  #log-panel h3, #device-panel h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  #log {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    max-height: 160px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  #log div { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .note-on { color: var(--accent); }
+  .note-off { color: var(--muted); }
+  footer {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+  footer a { color: #6ea8fe; }
+</style>
+</head>
+<body>
+
+  <h1>MIDI Virtual Keyboard</h1>
+  <p class="subtitle">Proof of concept — connects a MIDI-to-USB synthesizer to Chrome's Web MIDI API and mirrors what you play on an on-screen keyboard.</p>
+
+  <div id="unsupported" class="panel">
+    <strong>Web MIDI isn't available in this browser.</strong><br>
+    Web MIDI (<code>navigator.requestMIDIAccess</code>) only works in Chrome/Edge on desktop and Android.
+    It is <strong>not</strong> supported by any browser on iOS/iPadOS (including Chrome for iOS, which uses
+    Apple's WebKit engine under the hood). If you're testing from a phone, use an Android device.
+  </div>
+
+  <div class="panel">
+    <div id="status-line">
+      <div id="status-dot"></div>
+      <div id="status-text">Not connected</div>
+      <button id="connect-btn" type="button">Connect MIDI</button>
+    </div>
+    <div id="device-list"></div>
+  </div>
+
+  <div class="panel" id="held-panel">
+    <div id="held-label">Currently held</div>
+    <div id="held-notes" class="empty">— play a note —</div>
+  </div>
+
+  <div class="panel">
+    <div id="keyboard-scroll">
+      <div id="keyboard"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="log-panel">
+    <h3>Event log</h3>
+    <div id="log"></div>
+  </div>
+
+  <footer>
+    Virtual keyboard rendered with
+    <a href="https://github.com/stuartmemo/qwerty-hancock" target="_blank" rel="noopener">Qwerty Hancock</a>.
+    MIDI note on/off events are read directly from the browser's
+    <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API" target="_blank" rel="noopener">Web MIDI API</a>
+    and used to light up the matching key — hold a note on your synth and the key stays lit until you release it.
+  </footer>
+
+<script>
+(function () {
+  const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const WHITE_KEY_COLOUR = '#f4f6f9';
+  const BLACK_KEY_COLOUR = '#161b22';
+  const ACTIVE_COLOUR = '#22c55e';
+
+  // MIDI note 60 = middle C = "C4" (standard scientific pitch notation).
+  function noteNumberToName(number) {
+    const name = NOTE_NAMES[number % 12];
+    const octave = Math.floor(number / 12) - 1;
+    return name + octave;
+  }
+
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const connectBtn = document.getElementById('connect-btn');
+  const deviceListEl = document.getElementById('device-list');
+  const heldNotesEl = document.getElementById('held-notes');
+  const logEl = document.getElementById('log');
+  const unsupportedEl = document.getElementById('unsupported');
+
+  function setStatus(kind, text) {
+    statusDot.className = kind;
+    statusText.textContent = text;
+  }
+
+  function logLine(text, cssClass) {
+    const line = document.createElement('div');
+    if (cssClass) line.className = cssClass;
+    const time = new Date().toLocaleTimeString();
+    line.textContent = '[' + time + '] ' + text;
+    logEl.prepend(line);
+    while (logEl.childNodes.length > 100) {
+      logEl.removeChild(logEl.lastChild);
+    }
+  }
+
+  // Qwerty Hancock draws each key as an <li id="C4"> element, so we can
+  // drive its highlighting directly from external MIDI events by looking
+  // keys up by id and toggling the same colours it uses internally.
+  const keyboard = new QwertyHancock.QwertyHancock({
+    id: 'keyboard',
+    width: 1400,
+    height: 180,
+    octaves: 5,
+    startNote: 'C2',
+    whiteKeyColour: WHITE_KEY_COLOUR,
+    blackKeyColour: BLACK_KEY_COLOUR,
+    activeColour: ACTIVE_COLOUR,
+  });
+
+  setTimeout(function () {
+    const middleC = document.getElementById('C4');
+    if (middleC && middleC.scrollIntoView) {
+      middleC.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
+  }, 0);
+
+  function setKeyVisual(noteName, active) {
+    const el = document.getElementById(noteName);
+    if (!el) return;
+    if (active) {
+      el.style.backgroundColor = ACTIVE_COLOUR;
+    } else {
+      const isBlack = el.getAttribute('data-note-type') === 'black';
+      el.style.backgroundColor = isBlack ? BLACK_KEY_COLOUR : WHITE_KEY_COLOUR;
+    }
+  }
+
+  const heldNotes = new Map(); // midi note number -> note name
+
+  function refreshHeldDisplay() {
+    if (heldNotes.size === 0) {
+      heldNotesEl.textContent = '— play a note —';
+      heldNotesEl.classList.add('empty');
+      return;
+    }
+    heldNotesEl.classList.remove('empty');
+    const names = Array.from(heldNotes.keys())
+      .sort(function (a, b) { return a - b; })
+      .map(function (n) { return heldNotes.get(n); });
+    heldNotesEl.textContent = names.join('  ·  ');
+  }
+
+  function noteOn(number, velocity, deviceName) {
+    const name = noteNumberToName(number);
+    heldNotes.set(number, name);
+    setKeyVisual(name, true);
+    refreshHeldDisplay();
+    logLine(name + '  down  (vel ' + velocity + ')  — ' + deviceName, 'note-on');
+  }
+
+  function noteOff(number, deviceName) {
+    const name = noteNumberToName(number);
+    heldNotes.delete(number);
+    setKeyVisual(name, false);
+    refreshHeldDisplay();
+    logLine(name + '  up  — ' + deviceName, 'note-off');
+  }
+
+  function handleMIDIMessage(deviceName, event) {
+    const data = event.data;
+    const command = data[0] & 0xf0;
+    const number = data[1];
+    const velocity = data.length > 2 ? data[2] : 0;
+    if (command === 0x90 && velocity > 0) {
+      noteOn(number, velocity, deviceName);
+    } else if (command === 0x80 || (command === 0x90 && velocity === 0)) {
+      noteOff(number, deviceName);
+    }
+  }
+
+  let midiAccess = null;
+  const attachedInputs = new Set();
+
+  function renderDeviceList() {
+    const inputs = midiAccess ? Array.from(midiAccess.inputs.values()) : [];
+    if (inputs.length === 0) {
+      deviceListEl.innerHTML = 'No MIDI input devices detected yet. Plug in your USB MIDI adapter — the list updates automatically.';
+      return;
+    }
+    let html = inputs.length + ' input device(s) connected:<ul>';
+    inputs.forEach(function (input) {
+      html += '<li>' + (input.name || 'Unnamed device') + ' (' + input.state + ')</li>';
+    });
+    html += '</ul>';
+    deviceListEl.innerHTML = html;
+  }
+
+  function attachAllInputs() {
+    if (!midiAccess) return;
+    midiAccess.inputs.forEach(function (input) {
+      if (attachedInputs.has(input)) return;
+      attachedInputs.add(input);
+      input.onmidimessage = function (event) {
+        handleMIDIMessage(input.name || 'Unnamed device', event);
+      };
+      logLine('Listening on: ' + (input.name || 'Unnamed device'));
+    });
+    renderDeviceList();
+  }
+
+  function onStateChange(event) {
+    logLine((event.port.name || 'Unnamed device') + ' — ' + event.port.state);
+    attachAllInputs();
+    renderDeviceList();
+  }
+
+  async function connectMIDI() {
+    if (!navigator.requestMIDIAccess) {
+      unsupportedEl.style.display = 'block';
+      setStatus('error', 'Web MIDI not supported in this browser');
+      return;
+    }
+    setStatus('waiting', 'Requesting MIDI permission…');
+    try {
+      midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+      midiAccess.onstatechange = onStateChange;
+      attachAllInputs();
+      const count = Array.from(midiAccess.inputs.values()).length;
+      if (count === 0) {
+        setStatus('waiting', 'Connected — waiting for a MIDI device to be plugged in');
+      } else {
+        setStatus('ok', 'Connected — ' + count + ' device(s) ready');
+      }
+    } catch (err) {
+      setStatus('error', 'Permission denied or unavailable: ' + err.message);
+      logLine('Error requesting MIDI access: ' + err.message);
+    }
+  }
+
+  connectBtn.addEventListener('click', connectMIDI);
+
+  if (!navigator.requestMIDIAccess) {
+    unsupportedEl.style.display = 'block';
+    setStatus('error', 'Web MIDI not supported in this browser');
+  } else {
+    // Try automatically so a returning visitor with permission already
+    // granted doesn't have to click anything.
+    connectMIDI();
+  }
+})();
+</script>
+</body>
+</html>
