@@ -9,7 +9,7 @@ import { Metronome } from '../metronome.js';
 import { PracticePlayer, PracticeMode } from '../practice-engine.js';
 import { getHintsForSong } from '../mistakes.js';
 import { ensureAudioContext } from '../synth.js';
-import { noteNumberToName } from '../note-bus.js';
+import { noteNumberToName, onNoteOn, onNoteOff } from '../note-bus.js';
 import { navigate } from '../router.js';
 import { escapeHtml, formatPercent } from '../util.js';
 import { connectMidi, onMidiStatusChange } from '../midi.js';
@@ -122,6 +122,18 @@ export async function renderPlayer(root, params) {
     </div>
 
     <div class="panel">
+      <div class="row between">
+        <h3 style="margin:0">Live MIDI activity <span class="muted" style="font-weight:400">(debug)</span></h3>
+        <button class="btn secondary small" id="btn-clear-midi-log" type="button">Clear</button>
+      </div>
+      <p class="muted" style="margin:6px 0">
+        Shows every note on/off the app receives, from any source, whether or not you've clicked Start —
+        press a key on your MIDI keyboard now and confirm it shows up here.
+      </p>
+      <div class="mistake-log" id="midi-activity-log"><div class="muted">Waiting for input…</div></div>
+    </div>
+
+    <div class="panel">
       <div class="keyboard-scroll"><div id="keyboard-container"></div></div>
     </div>
   `;
@@ -133,6 +145,33 @@ export async function renderPlayer(root, params) {
     midiBanner.style.display = inputs.length === 0 ? '' : 'none';
   });
   root.querySelector('#btn-connect-midi').addEventListener('click', () => connectMidi());
+
+  // Unconditional raw activity log — independent of Start/practice state —
+  // so a "nothing happens when I press a key" report can be diagnosed by
+  // seeing whether the app is receiving anything at all, and with what
+  // note number/velocity/source, rather than guessing.
+  const midiActivityLog = root.querySelector('#midi-activity-log');
+  let midiActivityLogHasEntries = false;
+  function logMidiActivity(text) {
+    if (!midiActivityLogHasEntries) {
+      midiActivityLog.innerHTML = '';
+      midiActivityLogHasEntries = true;
+    }
+    const line = document.createElement('div');
+    line.textContent = `${new Date().toLocaleTimeString()} — ${text}`;
+    midiActivityLog.prepend(line);
+    while (midiActivityLog.childNodes.length > 30) midiActivityLog.removeChild(midiActivityLog.lastChild);
+  }
+  const unsubActivityOn = onNoteOn(({ number, velocity, source }) => {
+    logMidiActivity(`ON  ${noteNumberToName(number)} (midi #${number}), velocity ${velocity} — source: ${source}`);
+  });
+  const unsubActivityOff = onNoteOff(({ number, source }) => {
+    logMidiActivity(`OFF ${noteNumberToName(number)} (midi #${number}) — source: ${source}`);
+  });
+  root.querySelector('#btn-clear-midi-log').addEventListener('click', () => {
+    midiActivityLog.innerHTML = '<div class="muted">Waiting for input…</div>';
+    midiActivityLogHasEntries = false;
+  });
 
   const settingsBtn = root.querySelector('#btn-settings');
   const settingsMenu = root.querySelector('#settings-menu');
@@ -370,6 +409,8 @@ export async function renderPlayer(root, params) {
     keyboard.destroy();
     sheetRenderer?.destroy();
     unsubMidiStatus();
+    unsubActivityOn();
+    unsubActivityOff();
     document.removeEventListener('click', closeSettingsOnOutsideClick);
   };
 }
