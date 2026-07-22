@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Piano Study Guide</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%B9%3C/text%3E%3C/svg%3E">
+<script src="vendor/opensheetmusicdisplay.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <h1>🎹 Piano Study Guide</h1>
+      <nav class="app-nav">
+        <button data-route="/home" type="button">Home</button>
+        <button data-route="/path" type="button">Path</button>
+        <button data-route="/repertoire" type="button">Repertoire</button>
+        <button data-route="/record" type="button">Record</button>
+        <button data-route="/stats" type="button">Stats</button>
+        <button data-route="/profile" type="button">Profile</button>
+      </nav>
+      <div class="header-spacer"></div>
+      <div class="streak-chip" id="header-streak"></div>
+      <div class="goal-ring" id="header-goal-ring" title="Today's practice goal"></div>
+    </header>
+    <main id="screen-root"></main>
+    <footer class="app-footer">
+      Sheet music rendered with <a href="https://opensheetmusicdisplay.org/" target="_blank" rel="noopener">OpenSheetMusicDisplay</a> (BSD-3).
+      Everything is stored locally in this browser — see <a href="README.md">README</a> for the data model and cloud-migration plan.
+    </footer>
+  </div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
