@@ -25,7 +25,18 @@ export class SheetMusicRenderer {
     this.osmd = new OSMD(container, {
       backend: 'svg',
       drawingParameters: 'compacttight',
-      autoResize: true,
+      // `autoResize: true` wires OSMD to a ResizeObserver that re-renders
+      // the whole graphical sheet on container resize. Confirmed by direct
+      // A/B test (isolated OSMD instance vs. one mounted the same way this
+      // app does): with it on, the cursor's *iterator* keeps advancing
+      // correctly on every next() (expectedNotes()/currentMeasureIndex()
+      // stay right), but its on-screen <img> silently stops moving after
+      // the first render — it desyncs from the graphical notes a resize
+      // recomputed and never gets repositioned against them. Since nothing
+      // here needs the sheet music to reflow on resize (the container
+      // scrolls horizontally instead), this stays off rather than chasing
+      // OSMD's internal resize/cursor interaction.
+      autoResize: false,
     });
   }
 
