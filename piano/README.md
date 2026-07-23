@@ -31,15 +31,24 @@ stats. No build step — open `index.html` (or visit
   can practice it back later through the same engine as any other song.
 - **Stats** shows XP/level, streak, a 12-week practice calendar, and an
   accuracy/tempo-consistency trend chart per song.
-- Every lesson has a **▶ Preview** button next to Start that auto-plays the
-  piece — cursor moving, keyboard lighting up, synth sounding — with no
+- There's no Start/Stop button — opening a lesson, Repertoire song, or a
+  saved recording drops you straight into practicing. Wherever the cursor
+  sits is simply the next note it's waiting for; play it (or, for a
+  chord, all of them) and the cursor advances. Reaching the end (of the
+  loop, or the whole piece if there's no loop) scores that pass and
+  immediately starts the next one from the top — practice just keeps
+  cycling for as long as you're on the screen.
+- Every lesson also has a **▶ Preview** button that auto-plays the piece
+  once — cursor moving, keyboard lighting up, synth sounding — with no
   input needed and no attempt recorded, so you can hear/see what a piece
-  sounds like before practicing it.
-- Mode (Wait/Performance), tempo, loop range, and the metronome all live
-  behind the **⋮** button at the top of the player screen, hidden by
-  default so nothing but the sheet music, keyboard, and Start/Preview
-  compete for attention while you're actually practicing — open it to
-  configure, close it (click outside) and it's out of the way again.
+  sounds like. It pauses the continuous practice loop while it plays and
+  picks practice back up from the top the moment it's done (or you stop
+  it early).
+- Tempo, loop range, and the metronome all live behind the **⋮** button
+  at the top of the player screen, hidden by default so nothing but the
+  sheet music, keyboard, and Preview compete for attention while you're
+  actually practicing — open it to configure, close it (click outside)
+  and it's out of the way again.
 - **Double-click a measure** in the sheet music to build a loop for
   isolating a hard passage, without opening the Settings menu at all —
   double-click again to remove it, double-click an adjacent measure to
@@ -50,21 +59,26 @@ stats. No build step — open `index.html` (or visit
 
 ## How practicing works
 
-Three modes, all aware of an optional bar-range loop for isolating a hard
-passage:
+There's a single, always-on way to practice, aware of an optional bar-range
+loop for isolating a hard passage: the cursor never advances until you play
+the correct note (or, for a chord, all of them). Wrong notes are logged as
+mistakes but don't advance the piece, so you can take a passage at whatever
+pace you need — there's no session to start or stop, no tempo-clock mode
+that moves on without you.
 
-- **Wait for note** — the cursor never advances until you play the
-  correct note (or, for a chord, all of them). Wrong notes are logged as
-  mistakes but don't advance the piece, so you can take a passage at
-  whatever pace you need.
-- **Performance** — tempo/metronome-driven; the cursor advances on a
-  clock regardless of what you play, scoring how close each note landed to
-  the beat. This is what tempo-consistency measures.
-- **Preview/demo** (the ▶ Preview button, not exposed as a mode toggle) —
-  same tempo clock, but it plays itself: notes are emitted on the shared
-  note bus instead of waited for, so the synth and keyboard react exactly
-  as if you'd played them. No scoring, no Attempt recorded — it's a
-  listen-along, not a practice run.
+Reaching the end of the loop region (or the whole piece, if there's no
+loop) scores that pass as an Attempt — the same accuracy/stars/XP/mistake
+tracking as before — and the engine immediately jumps back to the top and
+starts the next pass, on its own. Setting or changing a loop (via the
+Settings menu or double-clicking measures) takes effect live, mid-practice,
+no restart needed.
+
+The one exception is **▶ Preview**, a separate, non-interactive mode: it
+plays the piece back on a tempo clock — notes emitted on the shared note
+bus so the synth and keyboard react exactly as if you'd played them — with
+no scoring and no Attempt recorded, purely a listen-along. It pauses the
+continuous practice loop above while it runs and hands back control (from
+the top of the loop/piece) the moment it finishes or is stopped.
 
 Recurring mistakes (3+ misses at the same note) don't surface as a separate
 text panel — they recolor that note's actual notehead in the sheet music
@@ -103,7 +117,8 @@ js/
   loop-selection.js     pure state machine for the double-click-to-loop
                        gesture (head/tail-only add/remove, bisect clears)
   piano-roll.js         canvas fallback "sheet music" for freehand recordings
-  practice-engine.js    PracticePlayer: wait/performance modes, looping, scoring
+  practice-engine.js    PracticePlayer: continuous wait-then-advance loop,
+                       auto-restarting laps, scoring, ▶ Preview's demo mode
   mistakes.js           cross-attempt mistake tally -> problem-note markers
   recorder.js           MIDI recorder + RecordingCursor (same interface as
                        sheetmusic.js's renderer, so recordings are practiceable

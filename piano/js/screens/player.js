@@ -53,15 +53,8 @@ export async function renderPlayer(root, params) {
       <div class="row" style="gap:8px; align-items:flex-start">
         <button class="btn secondary small overlay-toggle active" id="btn-toggle-overlay" type="button" aria-label="Toggle tricky-note highlighting" title="Highlight notes you keep missing">🎨</button>
         <div class="settings-menu-wrap">
-          <button class="btn secondary small" id="btn-settings" type="button" aria-label="Practice settings" title="Mode, tempo, loop, metronome">⋮</button>
+          <button class="btn secondary small" id="btn-settings" type="button" aria-label="Practice settings" title="Tempo, loop, metronome">⋮</button>
           <div class="settings-menu" id="settings-menu">
-            <div class="field">
-              <label>Mode</label>
-              <div class="mode-toggle">
-                <button data-mode="wait" class="active" type="button">Wait for note</button>
-                <button data-mode="performance" type="button">Performance</button>
-              </div>
-            </div>
             <div class="field">
               <label>Tempo (BPM)</label>
               <div class="row">
@@ -98,9 +91,9 @@ export async function renderPlayer(root, params) {
       </div>
     </div>
 
-    <div class="panel row" style="gap:8px">
+    <div class="panel row" style="gap:8px; align-items:center">
       <button class="btn secondary" id="btn-preview" type="button">▶ Preview</button>
-      <button class="btn success" id="btn-start" type="button">▶ Start</button>
+      <span class="muted" style="font-size:0.85em">🎧 Listening — play the highlighted note to advance; it loops back to the start when you reach the end.</span>
     </div>
 
     <div class="panel">
@@ -204,7 +197,7 @@ export async function renderPlayer(root, params) {
     bpmInput.value = value;
     bpmRange.value = value;
     metronome.setBpm(Number(value));
-    if (player) player.setTempoBpm(Number(value));
+    player.setTempoBpm(Number(value));
     if (chkMetronome.checked) metronomeStatus.textContent = `${value} BPM`;
   }
 
@@ -219,16 +212,6 @@ export async function renderPlayer(root, params) {
       metronome.stop();
       metronomeStatus.textContent = 'off';
     }
-  });
-
-  let mode = PracticeMode.WAIT;
-  root.querySelectorAll('.mode-toggle button').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (player && player.running) return;
-      root.querySelectorAll('.mode-toggle button').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      mode = btn.dataset.mode;
-    });
   });
 
   const chkLoop = root.querySelector('#chk-loop');
@@ -250,9 +233,12 @@ export async function renderPlayer(root, params) {
       loopEndInput.value = String(region.endMeasure);
     }
     sheetRenderer?.highlightLoopRegion(region);
+    player.setLoopRegion(region);
   }
   function refreshLoopOverlay() {
-    sheetRenderer?.highlightLoopRegion(currentLoopRegion());
+    const region = currentLoopRegion();
+    sheetRenderer?.highlightLoopRegion(region);
+    player.setLoopRegion(region);
   }
   chkLoop.addEventListener('change', refreshLoopOverlay);
   loopStartInput.addEventListener('input', refreshLoopOverlay);
@@ -260,7 +246,7 @@ export async function renderPlayer(root, params) {
 
   if (sheetRenderer) {
     root.querySelector('#sheet-music').addEventListener('dblclick', (e) => {
-      if (player?.running || previewPlayer?.running) return;
+      if (previewPlayer?.running) return;
       const hit = sheetRenderer.hitTest(e.clientX, e.clientY);
       if (!hit) return;
       if (hit.type === 'clef') {
@@ -272,8 +258,6 @@ export async function renderPlayer(root, params) {
     });
   }
 
-  let player = null;
-  const startBtn = root.querySelector('#btn-start');
   const accuracyEl = root.querySelector('#metric-accuracy');
   const progressEl = root.querySelector('#metric-progress');
   const starsEl = root.querySelector('#metric-stars');
@@ -301,28 +285,34 @@ export async function renderPlayer(root, params) {
       if (correct) hitCount += 1;
       accuracyEl.textContent = formatPercent(attemptCount ? hitCount / attemptCount : 0);
     });
-    p.addEventListener('mistake', (e) => {
+    p.addEventListener('mistake', async (e) => {
       const { measureIndex, expected, played } = e.detail;
       const line = document.createElement('div');
       line.textContent = `${stepLabel} ${measureIndex + 1}: expected ${expected.map(noteNumberToName).join('/')}, played ${noteNumberToName(played)}`;
       mistakeLogEl.prepend(line);
+      // Mistakes are tallied live, and with no Start/Stop to mark an
+      // attempt's end, a note can cross the "you keep missing this"
+      // threshold at any moment mid-lap — refresh right when it happens
+      // rather than waiting for the lap to wrap around.
+      await refreshProblemNoteOverlay();
     });
-    p.addEventListener('loop', () => resetLiveMetrics());
-    p.addEventListener('finished', async (e) => {
+    // A "lap" is completing the loop (or the whole piece) once: it's
+    // scored as an Attempt (XP/stars/mistake-overlay all key off this),
+    // and the engine immediately starts the next lap on its own — there's
+    // no Start/Stop button, so the live metrics just roll over to track
+    // the new lap in progress.
+    p.addEventListener('lap', async (e) => {
       const { attempt } = e.detail;
-      keyboard.clearExpected();
       starsEl.textContent = '⭐'.repeat(attempt.stars) || 'Keep going';
-      startBtn.textContent = '▶ Start';
-      previewBtn.disabled = false;
+      resetLiveMetrics();
       window.dispatchEvent(new CustomEvent('kira:profile-updated'));
       await refreshProblemNoteOverlay();
     });
     p.addEventListener('stopped', async () => {
       keyboard.clearExpected();
-      startBtn.textContent = '▶ Start';
-      previewBtn.disabled = false;
-      // Mistakes are recorded live during play, not just at completion, so
-      // even an aborted attempt can leave a note newly over threshold.
+      // Mistakes are recorded live during play, not just at lap completion,
+      // so even a lap interrupted by switching to Preview can leave a note
+      // newly over threshold.
       await refreshProblemNoteOverlay();
     });
   }
@@ -330,13 +320,32 @@ export async function renderPlayer(root, params) {
   const previewBtn = root.querySelector('#btn-preview');
   let previewPlayer = null;
 
+  // The one thing still needing an explicit click: unlocking WebAudio.
+  // Browsers only let an AudioContext resume from inside a real user
+  // gesture, and with no Start button anymore, the first click/tap
+  // anywhere on this screen is that gesture.
+  const unlockAudioOnFirstInput = () => ensureAudioContext();
+  document.addEventListener('pointerdown', unlockAudioOnFirstInput, { once: true });
+
+  const player = new PracticePlayer({
+    cursor,
+    profileId: profile.id,
+    songId: song ? song.id : null,
+    lessonId: lesson ? lesson.id : null,
+    mode: PracticeMode.WAIT,
+    tempoBpm: bpmValue(),
+    loopRegion: currentLoopRegion(),
+  });
+  wirePlayerEvents(player);
+  player.start();
+
   previewBtn.addEventListener('click', () => {
     ensureAudioContext();
     if (previewPlayer && previewPlayer.running) {
       previewPlayer.stop('manual');
       return;
     }
-    if (player && player.running) return;
+    player.stop('preview'); // pause continuous practice while previewing
     previewPlayer = new PracticePlayer({
       cursor,
       profileId: profile.id,
@@ -347,50 +356,27 @@ export async function renderPlayer(root, params) {
       loopRegion: currentLoopRegion(),
     });
     previewPlayer.addEventListener('step', (e) => keyboard.highlightExpected(e.detail.expected));
-    const resetPreviewUi = () => {
+    const resumePractice = () => {
       keyboard.clearExpected();
       previewBtn.textContent = '▶ Preview';
-      startBtn.disabled = false;
+      player.start(); // resume continuous practice from the top of the loop/piece
     };
-    previewPlayer.addEventListener('finished', resetPreviewUi);
-    previewPlayer.addEventListener('stopped', resetPreviewUi);
+    previewPlayer.addEventListener('finished', resumePractice);
+    previewPlayer.addEventListener('stopped', resumePractice);
     previewPlayer.start();
     previewBtn.textContent = '⏹ Stop';
-    startBtn.disabled = true;
-  });
-
-  startBtn.addEventListener('click', () => {
-    ensureAudioContext();
-    if (player && player.running) {
-      player.stop('manual');
-      return;
-    }
-    if (previewPlayer && previewPlayer.running) return;
-    previewBtn.disabled = true;
-    resetLiveMetrics();
-    player = new PracticePlayer({
-      cursor,
-      profileId: profile.id,
-      songId: song ? song.id : null,
-      lessonId: lesson ? lesson.id : null,
-      mode,
-      tempoBpm: bpmValue(),
-      loopRegion: currentLoopRegion(),
-    });
-    wirePlayerEvents(player);
-    player.start();
-    startBtn.textContent = '⏹ Stop';
   });
 
   await refreshProblemNoteOverlay();
 
   return () => {
-    player?.stop('navigated-away');
+    player.stop('navigated-away');
     previewPlayer?.stop('navigated-away');
     metronome.stop();
     keyboard.destroy();
     sheetRenderer?.destroy();
     unsubMidiStatus();
     document.removeEventListener('click', closeSettingsOnOutsideClick);
+    document.removeEventListener('pointerdown', unlockAudioOnFirstInput);
   };
 }
