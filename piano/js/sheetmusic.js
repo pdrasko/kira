@@ -23,6 +23,11 @@ function pitchToMidi(pitch) {
 // gentle "you keep missing this" flag, not an alarm).
 const PROBLEM_NOTE_COLOR = '#e2795f';
 
+// Distinct hue from the problem-note coral and the keyboard's "expected
+// note" blue, so a loop selection never reads as either of those.
+const LOOP_BAND_FILL = 'rgba(168, 85, 247, 0.16)';
+const LOOP_BAND_BORDER = 'rgba(168, 85, 247, 0.55)';
+
 export class SheetMusicRenderer {
   constructor(container) {
     this.container = container;
@@ -44,6 +49,8 @@ export class SheetMusicRenderer {
       autoResize: false,
     });
     this._coloredElements = []; // [{el, original}] — for reverting the problem-note overlay
+    this._measureRows = null; // computed once per load(); see _computeMeasureLayout()
+    this._loopOverlayEl = null;
   }
 
   async load(musicXml) {
@@ -53,6 +60,7 @@ export class SheetMusicRenderer {
     this.sheet = this.osmd.Sheet || this.osmd.sheet;
     this.cursor.show();
     this.cursor.reset();
+    this._computeMeasureLayout();
   }
 
   get measureCount() {
@@ -121,6 +129,122 @@ export class SheetMusicRenderer {
   scrollCursorIntoView() {
     const el = this.cursor?.cursorElement;
     if (el && el.scrollIntoView) el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }
+
+  /**
+   * Records where each measure sits on screen, for the double-click-to-loop
+   * gesture. There's no public "give me this measure's bounding box" API on
+   * the vendored build, so this walks every measure once (moving the shared
+   * cursor, like highlightProblemNotes() — safe here since it's only ever
+   * called right after load(), before anything else has touched the cursor)
+   * and records the *cursor's* left/top at each one. Measures on the same
+   * staff line share (near enough) the same top, which is what lets a click
+   * be matched to a row and then, within that row, to the measure whose
+   * horizontal span it falls in.
+   */
+  _computeMeasureLayout() {
+    const containerRect = this.container.getBoundingClientRect();
+    const points = [];
+    this.cursor.reset();
+    while (!this.atEnd()) {
+      const measureIndex = this.currentMeasureIndex();
+      if (!points.length || points[points.length - 1].measureIndex !== measureIndex) {
+        const rect = this.cursor.cursorElement.getBoundingClientRect();
+        points.push({
+          measureIndex,
+          left: rect.left - containerRect.left,
+          top: rect.top - containerRect.top,
+        });
+      }
+      this.cursor.next();
+    }
+    this.cursor.reset();
+
+    const rows = [];
+    for (const p of points) {
+      let row = rows.find((r) => Math.abs(r.top - p.top) < 5);
+      if (!row) {
+        row = { top: p.top, items: [] };
+        rows.push(row);
+      }
+      row.items.push(p);
+    }
+    for (const row of rows) row.items.sort((a, b) => a.left - b.left);
+    rows.sort((a, b) => a.top - b.top);
+    this._measureRows = rows;
+  }
+
+  /**
+   * Maps a click (in viewport coordinates, e.g. straight from a MouseEvent)
+   * to either a specific measure or the clef/key/time-signature area at the
+   * start of whichever staff line was clicked — every system repeats the
+   * clef, so this isn't limited to the first line.
+   * @returns {{type:'measure', measureIndex:number}|{type:'clef'}|null}
+   */
+  hitTest(clientX, clientY) {
+    if (!this._measureRows || this._measureRows.length === 0) return null;
+    const containerRect = this.container.getBoundingClientRect();
+    const x = clientX - containerRect.left + this.container.scrollLeft;
+    const y = clientY - containerRect.top + this.container.scrollTop;
+
+    let bestRow = null;
+    let bestDist = Infinity;
+    for (const row of this._measureRows) {
+      const dist = Math.abs(row.top - y);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestRow = row;
+      }
+    }
+    if (!bestRow || bestDist > 80) return null;
+
+    const items = bestRow.items;
+    if (x < items[0].left - 5) return { type: 'clef' };
+    for (let i = 0; i < items.length; i++) {
+      const left = items[i].left;
+      const right = i + 1 < items.length ? items[i + 1].left : Infinity;
+      if (x >= left && x < right) return { type: 'measure', measureIndex: items[i].measureIndex };
+    }
+    return null;
+  }
+
+  _ensureLoopOverlay() {
+    if (!this._loopOverlayEl) {
+      this.container.style.position = 'relative';
+      const el = document.createElement('div');
+      el.className = 'loop-overlay';
+      this.container.appendChild(el);
+      this._loopOverlayEl = el;
+    }
+    return this._loopOverlayEl;
+  }
+
+  /** Draws (or clears, if `region` is null) a translucent band over the 1-based inclusive measure range. */
+  highlightLoopRegion(region) {
+    const overlay = this._ensureLoopOverlay();
+    overlay.innerHTML = '';
+    if (!region || !this._measureRows) return;
+
+    const startIdx = region.startMeasure - 1;
+    const endIdx = region.endMeasure - 1;
+    for (const row of this._measureRows) {
+      const matching = row.items.filter((p) => p.measureIndex >= startIdx && p.measureIndex <= endIdx);
+      if (matching.length === 0) continue;
+      const lastMatchPos = row.items.indexOf(matching[matching.length - 1]);
+      const nextAfterLast = row.items[lastMatchPos + 1];
+      const left = matching[0].left;
+      const right = nextAfterLast ? nextAfterLast.left : left + 120;
+
+      const band = document.createElement('div');
+      band.className = 'loop-band';
+      band.style.left = `${left - 4}px`;
+      band.style.top = `${row.top - 34}px`;
+      band.style.width = `${right - left - 4}px`;
+      band.style.height = '76px';
+      band.style.background = LOOP_BAND_FILL;
+      band.style.border = `2px solid ${LOOP_BAND_BORDER}`;
+      overlay.appendChild(band);
+    }
   }
 
   /**
