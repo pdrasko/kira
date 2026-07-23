@@ -9,10 +9,10 @@ import { Metronome } from '../metronome.js';
 import { PracticePlayer, PracticeMode } from '../practice-engine.js';
 import { getHintsForSong } from '../mistakes.js';
 import { ensureAudioContext } from '../synth.js';
-import { noteNumberToName, onNoteOn, onNoteOff } from '../note-bus.js';
+import { noteNumberToName } from '../note-bus.js';
 import { navigate } from '../router.js';
 import { escapeHtml, formatPercent } from '../util.js';
-import { connectMidi, onMidiStatusChange, onRawMidiMessage } from '../midi.js';
+import { connectMidi, onMidiStatusChange } from '../midi.js';
 
 export async function renderPlayer(root, params) {
   const profile = await getCurrentProfile();
@@ -49,26 +49,7 @@ export async function renderPlayer(root, params) {
         </p>
         ${lesson?.description ? `<p class="muted" style="margin:6px 0 0">${escapeHtml(lesson.description)}</p>` : ''}
       </div>
-      <button class="btn secondary small" id="btn-back" type="button">← Back</button>
-    </div>
-
-    <div class="panel" id="midi-banner" style="display:none">
-      <div class="row between">
-        <span>🎹 No MIDI keyboard connected. Practice and recording both require a real USB-MIDI keyboard/controller — the on-screen keyboard below is a display only, not an input.</span>
-        <button class="btn secondary small" id="btn-connect-midi" type="button">Connect MIDI</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      ${recording ? '<div class="keyboard-scroll" id="roll-scroll"><canvas id="piano-roll"></canvas></div>' : '<div id="sheet-music"></div>'}
-    </div>
-
-    <div class="panel">
-      <div class="row between">
-        <div class="row" style="gap:8px">
-          <button class="btn secondary" id="btn-preview" type="button">▶ Preview</button>
-          <button class="btn success" id="btn-start" type="button">▶ Start</button>
-        </div>
+      <div class="row" style="gap:8px; align-items:flex-start">
         <div class="settings-menu-wrap">
           <button class="btn secondary small" id="btn-settings" type="button" aria-label="Practice settings" title="Mode, tempo, loop, metronome">⋮</button>
           <div class="settings-menu" id="settings-menu">
@@ -104,12 +85,30 @@ export async function renderPlayer(root, params) {
             </div>
           </div>
         </div>
+        <button class="btn secondary small" id="btn-back" type="button">← Back</button>
+      </div>
+    </div>
+
+    <div class="panel" id="midi-banner" style="display:none">
+      <div class="row between">
+        <span>🎹 No MIDI keyboard connected. Practice and recording both require a real USB-MIDI keyboard/controller — the on-screen keyboard below is a display only, not an input.</span>
+        <button class="btn secondary small" id="btn-connect-midi" type="button">Connect MIDI</button>
       </div>
     </div>
 
     <div class="panel" id="hints-panel" style="display:none">
       <h3 style="margin-top:0">Hints</h3>
       <div id="hints-list"></div>
+    </div>
+
+    <div class="panel row" style="gap:8px">
+      <button class="btn secondary" id="btn-preview" type="button">▶ Preview</button>
+      <button class="btn success" id="btn-start" type="button">▶ Start</button>
+    </div>
+
+    <div class="panel">
+      ${recording ? '<div class="keyboard-scroll" id="roll-scroll"><canvas id="piano-roll"></canvas></div>' : '<div id="sheet-music"></div>'}
+      <div class="keyboard-scroll" style="margin-top:14px"><div id="keyboard-container"></div></div>
     </div>
 
     <div class="panel">
@@ -120,80 +119,15 @@ export async function renderPlayer(root, params) {
       </div>
       <div class="mistake-log" id="mistake-log"></div>
     </div>
-
-    <div class="panel">
-      <div class="row between">
-        <h3 style="margin:0">Live MIDI activity <span class="muted" style="font-weight:400">(debug)</span></h3>
-        <button class="btn secondary small" id="btn-clear-midi-log" type="button">Clear</button>
-      </div>
-      <p class="muted" style="margin:6px 0">
-        Shows every message the app receives — recognized note on/off, and unrecognized raw bytes too —
-        whether or not you've clicked Start. Press a key now and confirm it shows up here. If a device
-        says "connected" but absolutely nothing appears here (not even a RAW line), no bytes are reaching
-        the browser at all — on a USB-to-5-pin-DIN adapter that's almost always a cabling issue (the DIN
-        cable into the adapter's OUT jack instead of IN, or the instrument's MIDI OUT not enabled), not
-        something in this app.
-      </p>
-      <div class="muted" id="midi-device-detail" style="margin-bottom:8px"></div>
-      <div class="mistake-log" id="midi-activity-log"><div class="muted">Waiting for input…</div></div>
-    </div>
-
-    <div class="panel">
-      <div class="keyboard-scroll"><div id="keyboard-container"></div></div>
-    </div>
   `;
 
   root.querySelector('#btn-back').addEventListener('click', () => navigate(backTarget));
 
   const midiBanner = root.querySelector('#midi-banner');
-  const midiDeviceDetail = root.querySelector('#midi-device-detail');
   const unsubMidiStatus = onMidiStatusChange(({ inputs }) => {
     midiBanner.style.display = inputs.length === 0 ? '' : 'none';
-    // `state` is whether the OS/browser sees the device at all; `connection`
-    // is whether the port is actually open and will deliver messages — a
-    // device stuck at connection:"closed" or "pending" here (instead of
-    // "open") explains "shows connected but nothing happens when I press a key".
-    midiDeviceDetail.textContent = inputs.length
-      ? `Device(s): ${inputs.map((i) => `${i.name || 'Unnamed'} (state: ${i.state}, connection: ${i.connection})`).join(', ')}`
-      : 'No MIDI input devices detected.';
   });
   root.querySelector('#btn-connect-midi').addEventListener('click', () => connectMidi());
-
-  // Unconditional raw activity log — independent of Start/practice state —
-  // so a "nothing happens when I press a key" report can be diagnosed by
-  // seeing whether the app is receiving anything at all, and with what
-  // note number/velocity/source, rather than guessing.
-  const midiActivityLog = root.querySelector('#midi-activity-log');
-  let midiActivityLogHasEntries = false;
-  function logMidiActivity(text) {
-    if (!midiActivityLogHasEntries) {
-      midiActivityLog.innerHTML = '';
-      midiActivityLogHasEntries = true;
-    }
-    const line = document.createElement('div');
-    line.textContent = `${new Date().toLocaleTimeString()} — ${text}`;
-    midiActivityLog.prepend(line);
-    while (midiActivityLog.childNodes.length > 30) midiActivityLog.removeChild(midiActivityLog.lastChild);
-  }
-  const unsubActivityOn = onNoteOn(({ number, velocity, source }) => {
-    logMidiActivity(`ON  ${noteNumberToName(number)} (midi #${number}), velocity ${velocity} — source: ${source}`);
-  });
-  const unsubActivityOff = onNoteOff(({ number, source }) => {
-    logMidiActivity(`OFF ${noteNumberToName(number)} (midi #${number}) — source: ${source}`);
-  });
-  // Every raw byte a MIDI input delivers, recognized or not — if this never
-  // shows anything, no bytes are reaching the browser at all (almost always
-  // a cabling issue on a DIN-to-USB adapter, not something in this app).
-  const unsubRaw = onRawMidiMessage(({ deviceName, data }) => {
-    const hex = Array.from(data)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join(' ');
-    logMidiActivity(`RAW [${hex}] from ${deviceName}`);
-  });
-  root.querySelector('#btn-clear-midi-log').addEventListener('click', () => {
-    midiActivityLog.innerHTML = '<div class="muted">Waiting for input…</div>';
-    midiActivityLogHasEntries = false;
-  });
 
   const settingsBtn = root.querySelector('#btn-settings');
   const settingsMenu = root.querySelector('#settings-menu');
@@ -431,9 +365,6 @@ export async function renderPlayer(root, params) {
     keyboard.destroy();
     sheetRenderer?.destroy();
     unsubMidiStatus();
-    unsubActivityOn();
-    unsubActivityOff();
-    unsubRaw();
     document.removeEventListener('click', closeSettingsOnOutsideClick);
   };
 }

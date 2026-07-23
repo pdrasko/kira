@@ -89,19 +89,25 @@ nav.app-nav button:hover { color: var(--text); }
   white-space: nowrap;
 }
 
-.midi-chip {
-  border: 1px solid var(--border);
+.midi-dot {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--border);
   background: var(--panel-2);
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
   cursor: pointer;
-  white-space: nowrap;
-  color: var(--muted);
+  filter: grayscale(1);
+  opacity: 0.6;
 }
-.midi-chip.connected { color: var(--accent); border-color: var(--accent); }
-.midi-chip.disconnected { color: var(--warn); border-color: var(--warn); }
-.midi-chip.unsupported { color: var(--danger); border-color: var(--danger); }
+.midi-dot.connected { border-color: var(--accent); filter: none; opacity: 1; }
+.midi-dot.disconnected { border-color: var(--warn); filter: none; opacity: 1; }
+.midi-dot.unsupported { border-color: var(--danger); filter: none; opacity: 1; }
 
 .goal-ring {
   width: 30px;

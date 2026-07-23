@@ -15,8 +15,9 @@ stats. No build step — open `index.html` (or visit
   note. This is the same approach as `../midi_keyboard/`: real Web MIDI
   input, nothing simulated. The app tries to connect automatically on
   load (Chrome/Edge on desktop or Android — Web MIDI isn't available on
-  iOS); the header's MIDI chip and a banner on the Player/Record screens
-  show connection status and offer a manual **Connect MIDI** button.
+  iOS); a small icon in the header (hover/tap for detail) and a banner on
+  the Player/Record screens show connection status and offer a manual
+  **Connect MIDI** button.
 - **Path** has a 2-chapter, 10-lesson built-in curriculum. Chapter 1,
   "Starter Studies," mirrors the topic order of PianoNanny.com's well-known
   free 8-lesson beginner course — keyboard orientation, black keys/sharps,
@@ -35,9 +36,10 @@ stats. No build step — open `index.html` (or visit
   input needed and no attempt recorded, so you can hear/see what a piece
   sounds like before practicing it.
 - Mode (Wait/Performance), tempo, loop range, and the metronome all live
-  behind the **⋮** button next to Start/Preview, so the player screen stays
-  uncluttered while you're actually practicing — open it to configure,
-  close it (click outside) and it's out of the way again.
+  behind the **⋮** button at the top of the player screen, hidden by
+  default so nothing but the sheet music, keyboard, and Start/Preview
+  compete for attention while you're actually practicing — open it to
+  configure, close it (click outside) and it's out of the way again.
 
 ## How practicing works
 
