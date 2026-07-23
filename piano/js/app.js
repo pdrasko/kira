@@ -28,22 +28,21 @@ async function refreshHeader() {
 }
 
 function wireMidiChip() {
+  // Deliberately just a small icon, not a text pill — full status lives in
+  // the title tooltip, and a colored ring gives an at-a-glance state.
   const chip = document.getElementById('header-midi-chip');
   onMidiStatusChange(({ supported, inputs }) => {
     if (!supported) {
-      chip.textContent = '🎹 MIDI: unsupported browser';
-      chip.className = 'midi-chip unsupported';
-      chip.title = 'Web MIDI needs Chrome or Edge (desktop or Android) — not available on iOS.';
+      chip.className = 'midi-dot unsupported';
+      chip.title = 'MIDI unsupported: needs Chrome or Edge (desktop or Android) — not available on iOS.';
       return;
     }
     if (inputs.length === 0) {
-      chip.textContent = '🎹 MIDI: connect keyboard';
-      chip.className = 'midi-chip disconnected';
-      chip.title = 'No MIDI device detected. Click to grant permission / plug in a USB-MIDI keyboard.';
+      chip.className = 'midi-dot disconnected';
+      chip.title = 'MIDI: no device connected. Click to grant permission / plug in a USB-MIDI keyboard.';
     } else {
-      chip.textContent = `🎹 MIDI: ${inputs.length} connected`;
-      chip.className = 'midi-chip connected';
-      chip.title = inputs.map((i) => i.name).join(', ');
+      chip.className = 'midi-dot connected';
+      chip.title = `MIDI: connected — ${inputs.map((i) => i.name).join(', ')}`;
     }
   });
   chip.addEventListener('click', () => connectMidi());
