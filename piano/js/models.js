@@ -49,7 +49,7 @@ export function makeGoal({ profileId, songId, targetAccuracy = 0.9, targetTempo 
 }
 
 /**
- * @typedef {{id:string, profileId:string, songId:string, lessonId:string|null, mode:'wait'|'performance',
+ * @typedef {{id:string, profileId:string, songId:string, lessonId:string|null, mode:'wait',
  *   startedAt:string, endedAt:string, durationMs:number, tempoBpm:number, accuracy:number, tempoConsistency:number,
  *   noteResults:Array<{measure:number, noteIndex:number, expected:string[], played:string|null, correct:boolean, timingErrorMs:number|null}>,
  *   stars:number, loopRegion:{startMeasure:number,endMeasure:number}|null}} Attempt
