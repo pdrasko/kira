@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Piano Study Guide</title>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%B9%3C/text%3E%3C/svg%3E">
 <script src="vendor/opensheetmusicdisplay.min.js"></script>
 </head>
@@ -31,6 +31,50 @@
       Everything is stored locally in this browser — see <a href="README.md">README</a> for the data model and cloud-migration plan.
     </footer>
   </div>
-<script type="module" src="js/app.js"></script>
+
+  <!--
+    Cache-busting: every ./js/*.js specifier is remapped here to a
+    versioned URL, same technique as the root app's index.html. Without
+    this, a browser (or GitHub Pages' CDN) can keep serving a stale copy
+    of one of these ~28 ES modules after a deploy since none of them are
+    referenced with a version query string in the import statements that
+    load them. Bump every "?v=N" below (a single find-and-replace) whenever
+    shipping a change to any file under js/ so this stops mattering.
+  -->
+  <script type="importmap">
+    { "imports": {
+        "./js/app-state.js": "./js/app-state.js?v=1",
+        "./js/app.js": "./js/app.js?v=1",
+        "./js/catalog.js": "./js/catalog.js?v=1",
+        "./js/db.js": "./js/db.js?v=1",
+        "./js/events.js": "./js/events.js?v=1",
+        "./js/keyboard.js": "./js/keyboard.js?v=1",
+        "./js/metronome.js": "./js/metronome.js?v=1",
+        "./js/midi.js": "./js/midi.js?v=1",
+        "./js/mistakes.js": "./js/mistakes.js?v=1",
+        "./js/models.js": "./js/models.js?v=1",
+        "./js/musicxml-builder.js": "./js/musicxml-builder.js?v=1",
+        "./js/note-bus.js": "./js/note-bus.js?v=1",
+        "./js/piano-roll.js": "./js/piano-roll.js?v=1",
+        "./js/practice-engine.js": "./js/practice-engine.js?v=1",
+        "./js/recorder.js": "./js/recorder.js?v=1",
+        "./js/router.js": "./js/router.js?v=1",
+        "./js/screens/home.js": "./js/screens/home.js?v=1",
+        "./js/screens/path.js": "./js/screens/path.js?v=1",
+        "./js/screens/player.js": "./js/screens/player.js?v=1",
+        "./js/screens/profile.js": "./js/screens/profile.js?v=1",
+        "./js/screens/record.js": "./js/screens/record.js?v=1",
+        "./js/screens/repertoire.js": "./js/screens/repertoire.js?v=1",
+        "./js/screens/stats.js": "./js/screens/stats.js?v=1",
+        "./js/seed-catalog.js": "./js/seed-catalog.js?v=1",
+        "./js/sheetmusic.js": "./js/sheetmusic.js?v=1",
+        "./js/stats.js": "./js/stats.js?v=1",
+        "./js/synth.js": "./js/synth.js?v=1",
+        "./js/util.js": "./js/util.js?v=1"
+    } }
+  </script>
+  <script type="module">
+    import './js/app.js';
+  </script>
 </body>
 </html>
