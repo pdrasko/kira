@@ -106,6 +106,14 @@ both implement the same small interface — `atEnd()`, `currentMeasureIndex()`,
 it's driving a MusicXML score or something you played into the recorder
 five minutes ago.
 
+**Cache-busting**: `index.html` uses an import map (same technique as the
+repo root's `index.html`) remapping every `./js/*.js` specifier to a
+`?v=N`-suffixed URL — without it, a deployed change to any of these ~28
+modules can keep being served from a stale browser/CDN cache indefinitely,
+since none of them are otherwise versioned. **Bump every `v=N` in that
+import map** (a single find-and-replace in `index.html`) whenever pushing
+a change to anything under `js/`.
+
 ## Data model & the path to a cloud backend
 
 Everything lives in `localStorage` today (namespaced under `kira.piano.v1.*`),
