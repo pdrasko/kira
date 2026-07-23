@@ -18,6 +18,11 @@ function pitchToMidi(pitch) {
   return pitch.getHalfTone() + 12;
 }
 
+// Soft, "pastel" coral — reads clearly against the sheet music's white
+// background without looking like an error/danger color (this is a
+// gentle "you keep missing this" flag, not an alarm).
+const PROBLEM_NOTE_COLOR = '#e2795f';
+
 export class SheetMusicRenderer {
   constructor(container) {
     this.container = container;
@@ -38,6 +43,7 @@ export class SheetMusicRenderer {
       // OSMD's internal resize/cursor interaction.
       autoResize: false,
     });
+    this._coloredElements = []; // [{el, original}] — for reverting the problem-note overlay
   }
 
   async load(musicXml) {
@@ -115,6 +121,79 @@ export class SheetMusicRenderer {
   scrollCursorIntoView() {
     const el = this.cursor?.cursorElement;
     if (el && el.scrollIntoView) el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }
+
+  /**
+   * Colors one note's rendered notehead directly in the SVG. OSMD's own
+   * "ColoringMode" feature is for coloring every note of a given pitch
+   * class alike (a Boomwhacker-style scheme) — not for flagging arbitrary
+   * individual notes — so this goes straight to the rendered SVG instead:
+   * `GraphicalNote.FromNote()` maps a source Note to its on-screen graphical
+   * counterpart (verified against the vendored build), and
+   * `getNoteheadSVGs()` gives the actual notehead element(s) to recolor.
+   */
+  _colorNote(note, color) {
+    const GraphicalNote = window.opensheetmusicdisplay.GraphicalNote;
+    const gNote = GraphicalNote?.FromNote?.(note, this.osmd.EngravingRules);
+    const headEls = gNote?.getNoteheadSVGs?.() || [];
+    for (const headEl of headEls) {
+      const paths = headEl.tagName === 'path' ? [headEl] : Array.from(headEl.querySelectorAll('path'));
+      for (const path of paths) {
+        if (!path.hasAttribute('fill')) continue;
+        this._coloredElements.push({ el: path, original: path.getAttribute('fill') });
+        path.setAttribute('fill', color);
+        path.style.fill = color;
+      }
+    }
+  }
+
+  /** Reverts every note colored by highlightProblemNotes() back to its original color. */
+  clearNoteColors() {
+    for (const { el, original } of this._coloredElements) {
+      el.setAttribute('fill', original);
+      el.style.fill = '';
+    }
+    this._coloredElements = [];
+  }
+
+  /**
+   * Recolors every note matching one of `markers` (from
+   * mistakes.js `getProblemNoteMarkers`) to a pastel "you keep missing
+   * this" color. Walks the whole piece once to find them, which moves the
+   * shared OSMD cursor — so it's restored to wherever it logically was
+   * (by measure) afterward, safe to call whether or not a practice run is
+   * in progress.
+   */
+  highlightProblemNotes(markers) {
+    this.clearNoteColors();
+    if (!markers || markers.length === 0) return;
+
+    const byMeasure = new Map();
+    for (const marker of markers) {
+      const list = byMeasure.get(marker.measureIndex) || [];
+      list.push(marker);
+      byMeasure.set(marker.measureIndex, list);
+    }
+
+    const resumeMeasureIndex = this.atEnd() ? null : this.currentMeasureIndex();
+    this.cursor.reset();
+    while (!this.atEnd()) {
+      const measureIndex = this.currentMeasureIndex();
+      const markersHere = byMeasure.get(measureIndex);
+      if (markersHere) {
+        for (const note of this.cursor.NotesUnderCursor()) {
+          if (!note || !note.Pitch) continue;
+          const midi = pitchToMidi(note.Pitch);
+          if (markersHere.some((m) => m.expected.includes(midi))) {
+            this._colorNote(note, PROBLEM_NOTE_COLOR);
+          }
+        }
+      }
+      this.cursor.next();
+    }
+
+    if (resumeMeasureIndex != null) this.jumpToMeasure(resumeMeasureIndex);
+    else this.cursor.reset();
   }
 
   destroy() {
