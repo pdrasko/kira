@@ -8,6 +8,7 @@ import { renderPianoRoll } from '../piano-roll.js';
 import { Metronome } from '../metronome.js';
 import { PracticePlayer, PracticeMode } from '../practice-engine.js';
 import { getProblemNoteMarkers } from '../mistakes.js';
+import { toggleMeasureInLoop, wholeSongLoop } from '../loop-selection.js';
 import { ensureAudioContext } from '../synth.js';
 import { noteNumberToName } from '../note-bus.js';
 import { navigate } from '../router.js';
@@ -104,6 +105,7 @@ export async function renderPlayer(root, params) {
 
     <div class="panel">
       ${recording ? '<div class="keyboard-scroll" id="roll-scroll"><canvas id="piano-roll"></canvas></div>' : '<div id="sheet-music"></div>'}
+      ${recording ? '' : '<p class="muted" style="margin:6px 0 0; font-size:0.85em">Double-click a measure to loop it (double-click again to remove); double-click the clef to loop the whole piece.</p>'}
       <div class="keyboard-scroll" style="margin-top:14px"><div id="keyboard-container"></div></div>
     </div>
 
@@ -235,6 +237,39 @@ export async function renderPlayer(root, params) {
     const startMeasure = Math.max(1, Number(loopStartInput.value) || 1);
     const endMeasure = Math.min(measureCount, Math.max(startMeasure, Number(loopEndInput.value) || measureCount));
     return { startMeasure, endMeasure };
+  }
+
+  // Keeps the manual Settings loop inputs, the PracticePlayer's loop region,
+  // and the in-staff purple overlay band all in sync regardless of whether
+  // the region was set by typing in the Settings menu or by double-clicking
+  // a measure — both are just different ways to write the same state.
+  function setLoopRegion(region) {
+    chkLoop.checked = !!region;
+    if (region) {
+      loopStartInput.value = String(region.startMeasure);
+      loopEndInput.value = String(region.endMeasure);
+    }
+    sheetRenderer?.highlightLoopRegion(region);
+  }
+  function refreshLoopOverlay() {
+    sheetRenderer?.highlightLoopRegion(currentLoopRegion());
+  }
+  chkLoop.addEventListener('change', refreshLoopOverlay);
+  loopStartInput.addEventListener('input', refreshLoopOverlay);
+  loopEndInput.addEventListener('input', refreshLoopOverlay);
+
+  if (sheetRenderer) {
+    root.querySelector('#sheet-music').addEventListener('dblclick', (e) => {
+      if (player?.running || previewPlayer?.running) return;
+      const hit = sheetRenderer.hitTest(e.clientX, e.clientY);
+      if (!hit) return;
+      if (hit.type === 'clef') {
+        setLoopRegion(wholeSongLoop(measureCount));
+        return;
+      }
+      const clickedMeasure = hit.measureIndex + 1; // hitTest is 0-based; loop-selection.js is 1-based
+      setLoopRegion(toggleMeasureInLoop(currentLoopRegion(), measureCount, clickedMeasure));
+    });
   }
 
   let player = null;

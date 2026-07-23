@@ -40,6 +40,13 @@ stats. No build step — open `index.html` (or visit
   default so nothing but the sheet music, keyboard, and Start/Preview
   compete for attention while you're actually practicing — open it to
   configure, close it (click outside) and it's out of the way again.
+- **Double-click a measure** in the sheet music to build a loop for
+  isolating a hard passage, without opening the Settings menu at all —
+  double-click again to remove it, double-click an adjacent measure to
+  extend the loop by one, and double-click the clef to loop the whole
+  piece. A soft purple band shows the selection right on the staff. This
+  is just a faster way to set the same loop range the Settings menu's
+  manual measure inputs control — both stay in sync with each other.
 
 ## How practicing works
 
@@ -91,7 +98,10 @@ js/
   metronome.js         WebAudio lookahead-scheduled metronome
   sheetmusic.js         OpenSheetMusicDisplay wrapper: cursor stepping,
                        expected-notes-under-cursor, measure jump/loop,
-                       recoloring specific noteheads for the mistake overlay
+                       recoloring specific noteheads for the mistake overlay,
+                       measure hit-testing + the loop-region overlay band
+  loop-selection.js     pure state machine for the double-click-to-loop
+                       gesture (head/tail-only add/remove, bisect clears)
   piano-roll.js         canvas fallback "sheet music" for freehand recordings
   practice-engine.js    PracticePlayer: wait/performance modes, looping, scoring
   mistakes.js           cross-attempt mistake tally -> problem-note markers
