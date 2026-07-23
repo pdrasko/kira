@@ -7,7 +7,7 @@ import { RecordingCursor } from '../recorder.js';
 import { renderPianoRoll } from '../piano-roll.js';
 import { Metronome } from '../metronome.js';
 import { PracticePlayer, PracticeMode } from '../practice-engine.js';
-import { getHintsForSong } from '../mistakes.js';
+import { getProblemNoteMarkers } from '../mistakes.js';
 import { ensureAudioContext } from '../synth.js';
 import { noteNumberToName } from '../note-bus.js';
 import { navigate } from '../router.js';
@@ -50,6 +50,7 @@ export async function renderPlayer(root, params) {
         ${lesson?.description ? `<p class="muted" style="margin:6px 0 0">${escapeHtml(lesson.description)}</p>` : ''}
       </div>
       <div class="row" style="gap:8px; align-items:flex-start">
+        <button class="btn secondary small overlay-toggle active" id="btn-toggle-overlay" type="button" aria-label="Toggle tricky-note highlighting" title="Highlight notes you keep missing">🎨</button>
         <div class="settings-menu-wrap">
           <button class="btn secondary small" id="btn-settings" type="button" aria-label="Practice settings" title="Mode, tempo, loop, metronome">⋮</button>
           <div class="settings-menu" id="settings-menu">
@@ -96,11 +97,6 @@ export async function renderPlayer(root, params) {
       </div>
     </div>
 
-    <div class="panel" id="hints-panel" style="display:none">
-      <h3 style="margin-top:0">Hints</h3>
-      <div id="hints-list"></div>
-    </div>
-
     <div class="panel row" style="gap:8px">
       <button class="btn secondary" id="btn-preview" type="button">▶ Preview</button>
       <button class="btn success" id="btn-start" type="button">▶ Start</button>
@@ -140,6 +136,8 @@ export async function renderPlayer(root, params) {
   };
   document.addEventListener('click', closeSettingsOnOutsideClick);
 
+  const overlayToggleBtn = root.querySelector('#btn-toggle-overlay');
+
   // C2–C6: wide enough to cover every built-in exercise, including the
   // "Finding C" Starter Study which reaches down to C2.
   const keyboard = new VirtualKeyboard(root.querySelector('#keyboard-container'), { startMidi: 36, endMidi: 84 });
@@ -155,6 +153,31 @@ export async function renderPlayer(root, params) {
     sheetRenderer = new SheetMusicRenderer(root.querySelector('#sheet-music'));
     await sheetRenderer.load(song.musicXml);
     cursor = sheetRenderer;
+  }
+
+  // Discreet on/off for the pastel "you keep missing this" overlay on the
+  // sheet music itself (in place of a separate text hints panel) — same
+  // toggle for Studies lessons and freely-played Repertoire songs, since
+  // both share this screen. No sheet music for a freehand recording, so
+  // nothing to toggle there.
+  let showProblemOverlay = true;
+  async function refreshProblemNoteOverlay() {
+    if (!song || !sheetRenderer) return;
+    if (!showProblemOverlay) {
+      sheetRenderer.clearNoteColors();
+      return;
+    }
+    const markers = await getProblemNoteMarkers(song.id);
+    sheetRenderer.highlightProblemNotes(markers);
+  }
+  if (recording) {
+    overlayToggleBtn.style.display = 'none';
+  } else {
+    overlayToggleBtn.addEventListener('click', () => {
+      showProblemOverlay = !showProblemOverlay;
+      overlayToggleBtn.classList.toggle('active', showProblemOverlay);
+      refreshProblemNoteOverlay();
+    });
   }
 
   const measureCount = cursor.measureCount || 1;
@@ -257,12 +280,15 @@ export async function renderPlayer(root, params) {
       startBtn.textContent = '▶ Start';
       previewBtn.disabled = false;
       window.dispatchEvent(new CustomEvent('kira:profile-updated'));
-      await refreshHints();
+      await refreshProblemNoteOverlay();
     });
-    p.addEventListener('stopped', () => {
+    p.addEventListener('stopped', async () => {
       keyboard.clearExpected();
       startBtn.textContent = '▶ Start';
       previewBtn.disabled = false;
+      // Mistakes are recorded live during play, not just at completion, so
+      // even an aborted attempt can leave a note newly over threshold.
+      await refreshProblemNoteOverlay();
     });
   }
 
@@ -321,42 +347,7 @@ export async function renderPlayer(root, params) {
     startBtn.textContent = '⏹ Stop';
   });
 
-  async function refreshHints() {
-    const hintsPanel = root.querySelector('#hints-panel');
-    const hintsList = root.querySelector('#hints-list');
-    if (!song) {
-      hintsPanel.style.display = 'none';
-      return;
-    }
-    const hints = await getHintsForSong(song.id, measureCount);
-    if (hints.length === 0) {
-      hintsPanel.style.display = 'none';
-      return;
-    }
-    hintsPanel.style.display = '';
-    hintsList.innerHTML = hints
-      .map(
-        (h, i) => `
-      <div class="hint-card">
-        <span>${escapeHtml(h.message)}</span>
-        <button class="btn small" data-idx="${i}" type="button">Practice this section</button>
-      </div>`
-      )
-      .join('');
-    hintsList.querySelectorAll('button[data-idx]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const hint = hints[Number(btn.dataset.idx)];
-        chkLoop.checked = true;
-        loopStartInput.value = String(hint.loopRegion.startMeasure);
-        loopEndInput.value = String(hint.loopRegion.endMeasure);
-        root.querySelectorAll('.mode-toggle button').forEach((b) => b.classList.remove('active'));
-        root.querySelector('.mode-toggle button[data-mode="wait"]').classList.add('active');
-        mode = PracticeMode.WAIT;
-        startBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    });
-  }
-  await refreshHints();
+  await refreshProblemNoteOverlay();
 
   return () => {
     player?.stop('navigated-away');

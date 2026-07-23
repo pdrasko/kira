@@ -267,6 +267,16 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
   margin-bottom: 14px;
 }
 
+.overlay-toggle {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.overlay-toggle.active {
+  opacity: 1;
+  filter: none;
+  box-shadow: 0 0 0 2px var(--accent-2) inset;
+}
+
 .settings-menu-wrap { position: relative; }
 
 .settings-menu {
@@ -300,19 +310,6 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
 .metric { text-align: center; }
 .metric .value { font-size: 22px; font-weight: 700; }
 .metric .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
-.hint-card {
-  background: #2a2410;
-  border: 1px solid var(--warn);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  font-size: 13px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
 
 .mistake-log { max-height: 120px; overflow-y: auto; font-size: 12px; color: var(--muted); }
 .mistake-log div { padding: 2px 0; }

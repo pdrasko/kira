@@ -2,7 +2,7 @@
 
 A Duolingo-style piano practice app: a lesson path with chapters and stars, a
 free-play repertoire, MIDI recording, live sheet-music-synced practice with a
-virtual keyboard, a metronome, mistake tracking with hints, and progress
+virtual keyboard, a metronome, an in-staff mistake overlay, and progress
 stats. No build step — open `index.html` (or visit
 **https://pdrasko.github.io/kira/piano/**) and it runs.
 
@@ -59,9 +59,17 @@ passage:
   as if you'd played them. No scoring, no Attempt recorded — it's a
   listen-along, not a practice run.
 
-Recurring mistakes (3+ misses at the same note/measure) surface as a hint
-with a one-click "practice this section" button that sets up a loop around
-the trouble spot in wait mode.
+Recurring mistakes (3+ misses at the same note) don't surface as a separate
+text panel — they recolor that note's actual notehead in the sheet music
+itself, in a soft pastel color, right where you're already looking. A small
+🎨 icon at the top of the screen toggles this overlay on/off; it's on by
+default and works the same way whether you got there through a Starter
+Studies lesson or picked a song from Repertoire. Under the hood,
+`sheetmusic.js` maps a source `Note` to its on-screen SVG via OSMD's
+`GraphicalNote.FromNote()` + `getNoteheadSVGs()` and recolors it directly —
+OSMD's own "coloring mode" feature colors every note of a given pitch class
+alike (Boomwhacker-style), not arbitrary individual notes, so it doesn't fit
+this.
 
 ## Architecture
 
@@ -82,10 +90,11 @@ js/
                        / played-back recordings are actually audible
   metronome.js         WebAudio lookahead-scheduled metronome
   sheetmusic.js         OpenSheetMusicDisplay wrapper: cursor stepping,
-                       expected-notes-under-cursor, measure jump/loop
+                       expected-notes-under-cursor, measure jump/loop,
+                       recoloring specific noteheads for the mistake overlay
   piano-roll.js         canvas fallback "sheet music" for freehand recordings
   practice-engine.js    PracticePlayer: wait/performance modes, looping, scoring
-  mistakes.js           cross-attempt mistake tally + hint generation
+  mistakes.js           cross-attempt mistake tally -> problem-note markers
   recorder.js           MIDI recorder + RecordingCursor (same interface as
                        sheetmusic.js's renderer, so recordings are practiceable
                        through the identical engine)

@@ -1,12 +1,13 @@
-// Cross-attempt mistake tracking + the hint engine. Every wrong note the
-// practice engine sees gets tallied per (song, measure, expected note-set)
-// so a mistake that shows up once is noise, but one that recurs becomes a
-// concrete, actionable hint: "you keep missing this — loop it."
+// Cross-attempt mistake tracking. Every wrong note the practice engine
+// sees gets tallied per (song, measure, expected note-set) so a mistake
+// that shows up once is noise, but one that recurs past PROBLEM_THRESHOLD
+// is worth surfacing — as a colored overlay directly on the sheet music
+// (see sheetmusic.js `highlightProblemNotes`) rather than a separate text
+// panel, so it stays in the same visual context you're already reading.
 
 import { db } from './db.js';
-import { noteNumberToName } from './note-bus.js';
 
-const HINT_THRESHOLD = 3;
+export const PROBLEM_THRESHOLD = 3;
 
 function statKey(songId, measureIndex, expected) {
   return `${songId}::${measureIndex}::${[...expected].sort((a, b) => a - b).join(',')}`;
@@ -33,24 +34,12 @@ export async function getMistakeStatsForSong(songId) {
 }
 
 /**
- * Returns actionable hints for a song, worst-first: recurring wrong notes
- * at a specific measure, each paired with a ready-to-use loop region
- * (a measure of padding on either side) so the UI can offer a one-click
- * "practice this section" drill.
+ * Notes worth flagging on the sheet music: recurring wrong notes (or timing
+ * misses) past PROBLEM_THRESHOLD, as {measureIndex, expected, missCount}
+ * triples the sheet-music renderer can match against notes under its
+ * cursor while it walks the piece.
  */
-export async function getHintsForSong(songId, measureCount) {
-  const stats = (await getMistakeStatsForSong(songId)).filter((s) => s.missCount >= HINT_THRESHOLD);
-  stats.sort((a, b) => b.missCount - a.missCount);
-  return stats.slice(0, 3).map((stat) => {
-    const noteNames = stat.expected.map(noteNumberToName).join('/');
-    const startMeasure = Math.max(1, stat.measureIndex + 1 - 1); // 1-based, one measure of lead-in
-    const endMeasure = measureCount ? Math.min(measureCount, stat.measureIndex + 1 + 1) : stat.measureIndex + 2;
-    return {
-      songId,
-      measureIndex: stat.measureIndex,
-      missCount: stat.missCount,
-      message: `You've missed ${noteNames} at measure ${stat.measureIndex + 1} ${stat.missCount} times — try looping measures ${startMeasure}-${endMeasure} slowly.`,
-      loopRegion: { startMeasure, endMeasure },
-    };
-  });
+export async function getProblemNoteMarkers(songId) {
+  const stats = (await getMistakeStatsForSong(songId)).filter((s) => s.missCount >= PROBLEM_THRESHOLD);
+  return stats.map((s) => ({ measureIndex: s.measureIndex, expected: s.expected, missCount: s.missCount }));
 }
